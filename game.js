@@ -118,6 +118,7 @@ class BabyVillagerGame {
 
         // Управление
         this.keys = {};
+        this.mobileKeys = {}; // Отдельные флаги для мобильных кнопок
         this.mouseX = 0;
 
         this.init();
@@ -558,21 +559,25 @@ class BabyVillagerGame {
         document.getElementById('leftBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.keys['ArrowLeft'] = true;
+            this.mobileKeys['ArrowLeft'] = true;
         });
 
         document.getElementById('leftBtn').addEventListener('touchend', (e) => {
             e.preventDefault();
             this.keys['ArrowLeft'] = false;
+            this.mobileKeys['ArrowLeft'] = false;
         });
 
         document.getElementById('rightBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.keys['ArrowRight'] = true;
+            this.mobileKeys['ArrowRight'] = true;
         });
 
         document.getElementById('rightBtn').addEventListener('touchend', (e) => {
             e.preventDefault();
             this.keys['ArrowRight'] = false;
+            this.mobileKeys['ArrowRight'] = false;
         });
 
         // Обычные клики для кнопок (для тестирования на десктопе)
@@ -1154,11 +1159,13 @@ class BabyVillagerGame {
     updatePlayer() {
         if (this.gameState !== 'playing') return;
 
-        // Горизонтальное движение (только клавиатура)
+        // Горизонтальное движение - одинаковая скорость для всех устройств
+        let acceleration = 1.0; // Увеличенное ускорение для всех устройств
+        
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
-            this.player.velocityX = Math.max(this.player.velocityX - 0.5, -this.player.maxSpeed);
+            this.player.velocityX = Math.max(this.player.velocityX - acceleration, -this.player.maxSpeed);
         } else if (this.keys['ArrowRight'] || this.keys['KeyD']) {
-            this.player.velocityX = Math.min(this.player.velocityX + 0.5, this.player.maxSpeed);
+            this.player.velocityX = Math.min(this.player.velocityX + acceleration, this.player.maxSpeed);
         } else {
             this.player.velocityX *= this.friction;
         }
