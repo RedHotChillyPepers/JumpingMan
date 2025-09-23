@@ -1,3 +1,6 @@
+// Версия игры
+const GAME_VERSION = '1.2.0';
+
 class BabyVillagerGame {
     constructor() {
         this.canvas = document.getElementById('gameCanvas');
@@ -120,6 +123,10 @@ class BabyVillagerGame {
         this.keys = {};
         this.mobileKeys = {}; // Отдельные флаги для мобильных кнопок
         this.mouseX = 0;
+        
+        // Время для стабильной скорости игры
+        this.lastTime = 0;
+        this.deltaTime = 0;
 
         this.init();
     }
@@ -1159,21 +1166,24 @@ class BabyVillagerGame {
     updatePlayer() {
         if (this.gameState !== 'playing') return;
 
+        // Нормализуем deltaTime к 60 FPS (16.67ms)
+        const timeScale = this.deltaTime / 16.67;
+        
         // Горизонтальное движение - одинаковая скорость для всех устройств
-        let acceleration = 1.0; // Увеличенное ускорение для всех устройств
+        let acceleration = 0.8 * timeScale; // Уменьшенное ускорение для плавности
         
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
             this.player.velocityX = Math.max(this.player.velocityX - acceleration, -this.player.maxSpeed);
         } else if (this.keys['ArrowRight'] || this.keys['KeyD']) {
             this.player.velocityX = Math.min(this.player.velocityX + acceleration, this.player.maxSpeed);
         } else {
-            this.player.velocityX *= this.friction;
+            this.player.velocityX *= Math.pow(this.friction, timeScale);
         }
 
         // Применяем гравитацию или эффект реактивного ранца
         if (this.playerJetpackActive) {
             // Реактивный ранец - плавное набирание скорости
-            const jetpackAcceleration = 0.8; // Ускорение ранца (увеличено)
+            const jetpackAcceleration = 0.8 * timeScale; // Ускорение ранца (увеличено)
             const maxJetpackSpeed = -18; // Максимальная скорость вверх от ранца (увеличено)
 
             // Плавно набираем скорость до максимума
@@ -1187,12 +1197,12 @@ class BabyVillagerGame {
             }
         } else {
             // Обычная гравитация
-            this.player.velocityY += this.gravity;
+            this.player.velocityY += this.gravity * timeScale;
         }
 
         // Обновляем позицию
-        this.player.x += this.player.velocityX;
-        this.player.y += this.player.velocityY;
+        this.player.x += this.player.velocityX * timeScale;
+        this.player.y += this.player.velocityY * timeScale;
 
         // Обновляем состояние анимации
         this.updateAnimationState();
@@ -1310,9 +1320,11 @@ class BabyVillagerGame {
     }
 
     updatePlatforms() {
+        const timeScale = this.deltaTime / 16.67;
+        
         for (let platform of this.platforms) {
             if (platform.type === 'moving') {
-                platform.x += platform.velocityX * platform.direction;
+                platform.x += platform.velocityX * platform.direction * timeScale;
 
                 if (platform.x <= 0 || platform.x + platform.width >= this.canvas.width) {
                     platform.direction *= -1;
@@ -1323,9 +1335,11 @@ class BabyVillagerGame {
     }
 
     updateCoins() {
+        const timeScale = this.deltaTime / 16.67;
+        
         for (let coin of this.coins) {
             if (!coin.collected) {
-                coin.animation += 0.2;
+                coin.animation += 0.2 * timeScale;
 
                 // Проверяем столкновение с игроком
                 if (this.player.x < coin.x + coin.width &&
@@ -1361,9 +1375,11 @@ class BabyVillagerGame {
     }
 
     updateJetpacks() {
+        const timeScale = this.deltaTime / 16.67;
+        
         for (let jetpack of this.jetpacks) {
             if (!jetpack.collected) {
-                jetpack.animation += 0.15;
+                jetpack.animation += 0.15 * timeScale;
 
                 // Проверяем столкновение с игроком
                 if (this.player.x < jetpack.x + jetpack.size &&
@@ -1398,7 +1414,7 @@ class BabyVillagerGame {
 
         // Обновляем состояние реактивного ранца игрока
         if (this.playerJetpackActive) {
-            this.jetpackTimeLeft -= 16; // Примерно 60 FPS
+            this.jetpackTimeLeft -= this.deltaTime; // Используем реальное время
 
             if (this.jetpackTimeLeft <= 0) {
                 this.playerJetpackActive = false;
@@ -1486,6 +1502,16 @@ class BabyVillagerGame {
 
         // Обновляем состояние кнопок магазина
         this.updateShopButtons();
+        
+        // Обновляем версию игры на главном экране
+        this.updateGameVersion();
+    }
+
+    updateGameVersion() {
+        const versionElement = document.querySelector('.version-info');
+        if (versionElement) {
+            versionElement.textContent = `Версия ${GAME_VERSION}`;
+        }
     }
 
     updateMobileJumpButton() {
@@ -2538,7 +2564,17 @@ class BabyVillagerGame {
         }
     }
 
-    gameLoop() {
+    gameLoop(currentTime = 0) {
+        // Вычисляем deltaTime для стабильной скорости на всех мониторах
+        if (this.lastTime === 0) {
+            this.lastTime = currentTime;
+        }
+        this.deltaTime = currentTime - this.lastTime;
+        this.lastTime = currentTime;
+        
+        // Ограничиваем deltaTime для предотвращения больших скачков
+        this.deltaTime = Math.min(this.deltaTime, 16.67); // Максимум 60 FPS
+        
         this.frameCount++;
         this.updatePlayer();
         this.updatePlatforms();
@@ -2550,7 +2586,7 @@ class BabyVillagerGame {
         this.render();
         this.drawMainScreenCharacter(); // Обновляем персонажа на главном экране
 
-        requestAnimationFrame(() => this.gameLoop());
+        requestAnimationFrame((time) => this.gameLoop(time));
     }
 
 }
