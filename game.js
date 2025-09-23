@@ -4,24 +4,24 @@ class BabyVillagerGame {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = 400;
         this.canvas.height = 600;
-        
+
         // Игровые состояния
         this.gameState = 'start'; // start, playing, gameOver
         this.continueAttempts = 2; // Количество попыток продолжить игру
         this.score = 0;
         this.highScore = parseInt(localStorage.getItem('babyVillagerHighScore') || '0');
         this.lastScore = parseInt(localStorage.getItem('babyVillagerLastScore') || '0');
-        
+
         // Призрак
         this.ghost = {
             y: 0,
             visible: false,
             animation: 0
         };
-        
+
         // Фейковые призраки
         this.fakeGhosts = [];
-        
+
         // Генератор случайных ников
         this.nicknamePrefixes = [
             'Player', 'Gamer', 'Jump', 'Sky', 'Cloud', 'Pixel', 'Mine', 'Doodle',
@@ -30,14 +30,14 @@ class BabyVillagerGame {
             'Pro', 'King', 'Queen', 'Lord', 'Lady', 'Boss', 'Chief', 'Elite', 'Alpha',
             'Beta', 'Gamma', 'Omega', 'Storm', 'Fire', 'Ice', 'Wind', 'Earth'
         ];
-        
+
         this.nicknameSuffixes = [
             '123', '456', '789', '2024', '2025', 'X', 'Z', 'Pro', 'Max', 'Ultra',
             'Prime', 'Gold', 'Silver', 'Bronze', 'Diamond', 'Platinum', 'Master',
             'Champ', 'King', 'Queen', 'Lord', 'Boss', 'Elite', 'Alpha', 'Beta',
             'Storm', 'Fire', 'Ice', 'Wind', 'Earth', 'Sky', 'Cloud', 'Star'
         ];
-        
+
         // Звуки
         this.sounds = {
             jump: null,
@@ -49,12 +49,12 @@ class BabyVillagerGame {
         };
         this.soundEnabled = localStorage.getItem('soundEnabled') !== 'false';
         this.initSounds();
-        
+
         // Система анимаций
         this.animationState = 'idle'; // idle, jumping, falling, superJump
         this.animationTimer = 0;
         this.lastVelocityY = 0;
-        
+
         // Игровые объекты
         this.player = {
             x: this.canvas.width / 2,
@@ -69,65 +69,65 @@ class BabyVillagerGame {
             doubleJumpAvailable: false,
             doubleJumpUsed: false
         };
-        
+
         this.platforms = [];
         this.camera = { y: 0 };
         this.platformTypes = ['normal', 'moving', 'breakable', 'spring'];
         this.frameCount = 0;
-        
+
         // Система монет
         this.coins = [];
         this.coinsCollected = 0;
         this.totalCoins = parseInt(localStorage.getItem('babyVillagerCoins') || '0');
-        
+
         // Система реактивного ранца
         this.jetpacks = [];
         this.playerJetpackActive = false;
         this.jetpackTimeLeft = 0;
         this.jetpackDuration = 3000; // 3 секунды в миллисекундах
-        
+
         // Система параллакса
         this.parallaxLayers = [];
         // Облака рисуются динамически
         this.timeOfDay = 'day'; // day, night
         this.nightHeight = 3000; // Высота начала ночи
         this.cycleHeight = 6000; // Высота для перезапуска цикла
-        
+
         // Система магазина
         this.shop = {
             doubleJumpCount: parseInt(localStorage.getItem('babyVillagerDoubleJumpCount') || '0'),
             skins: {
                 default: { name: 'Классический', price: 0, owned: true },
-                golden: { name: 'Золотой', price: 0, owned: false },
-                rainbow: { name: 'Радужный', price: 0, owned: false },
-                fire: { name: 'Огненный', price: 0, owned: false },
-                ice: { name: 'Ледяной', price: 0, owned: false }
+                golden: { name: 'Золотой', price: 500, owned: false },
+                rainbow: { name: 'Радужный', price: 1000, owned: false },
+                fire: { name: 'Огненный', price: 1500, owned: false },
+                ice: { name: 'Ледяной', price: 2000, owned: false }
             },
             currentSkin: localStorage.getItem('babyVillagerCurrentSkin') || 'default',
             prices: {
                 doubleJump: 50
             }
         };
-        
+
         // Загружаем скины из localStorage
         this.loadSkinsFromStorage();
-        
+
         // Физика
         this.gravity = 0.8;
         this.friction = 0.9;
-        
+
         // Управление
         this.keys = {};
         this.mouseX = 0;
-        
+
         this.init();
     }
-    
+
     initSounds() {
         // Создаем звуки программно для совместимости
         this.createSoundEffects();
     }
-    
+
     createSoundEffects() {
         // Создаем звуковые эффекты в стиле iOS с помощью Web Audio API
         try {
@@ -138,112 +138,112 @@ class BabyVillagerGame {
             this.soundEnabled = false;
             return;
         }
-        
+
         // Звук прыжка (низкий и приятный)
         this.sounds.jump = () => {
             if (!this.soundEnabled || !this.audioContext) return;
             this.createIOSClickSound(200, 0.08, 0.12);
         };
-        
+
         // Звук пружины (средний тон, более энергичный)
         this.sounds.spring = () => {
             if (!this.soundEnabled || !this.audioContext) return;
             this.createIOSClickSound(300, 0.1, 0.15);
         };
-        
+
         // Звук ломающейся платформы (очень низкий и короткий)
         this.sounds.break = () => {
             if (!this.soundEnabled || !this.audioContext) return;
             this.createIOSClickSound(150, 0.12, 0.08);
         };
-        
+
         // Звук окончания игры (мелодия в стиле iOS)
         this.sounds.gameOver = () => {
             if (!this.soundEnabled || !this.audioContext) return;
             this.playIOSGameOverSound();
         };
-        
+
         // Фоновая музыка (тихая и ненавязчивая)
         this.sounds.background = () => {
             if (!this.soundEnabled || !this.audioContext) return;
             this.playIOSBackgroundMusic();
         };
-        
+
         // Звук монетки (мелодичный звон)
         this.sounds.coin = () => {
             if (!this.soundEnabled || !this.audioContext) return;
             this.createCoinSound();
         };
     }
-    
+
     createIOSClickSound(frequency, duration, volume) {
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
         const filter = this.audioContext.createBiquadFilter();
-        
+
         oscillator.connect(filter);
         filter.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
-        
+
         // Настройка фильтра для iOS-подобного звука (более низкий)
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(1200, this.audioContext.currentTime);
-        
+
         // Частота с небольшим вибрато
         oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
         oscillator.frequency.linearRampToValueAtTime(frequency * 0.8, this.audioContext.currentTime + duration);
-        
+
         // Громкость с плавным затуханием
         gainNode.gain.setValueAtTime(volume, this.audioContext.currentTime);
         gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + duration);
-        
+
         oscillator.start(this.audioContext.currentTime);
         oscillator.stop(this.audioContext.currentTime + duration);
     }
-    
+
     playIOSGameOverSound() {
         // Низкая мелодия в стиле iOS
         const notes = [261.63, 233.08, 220.00, 196.00]; // C, A#, A, G (на октаву ниже)
         const noteDuration = 0.25;
-        
+
         notes.forEach((note, index) => {
             setTimeout(() => {
                 this.createIOSClickSound(note, noteDuration, 0.1);
             }, index * noteDuration * 1000);
         });
     }
-    
+
     createCoinSound() {
         // Создаем мягкий и приятный звук монетки
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
         const filter = this.audioContext.createBiquadFilter();
-        
+
         // Подключаем компоненты
         oscillator.connect(filter);
         filter.connect(gainNode);
         gainNode.connect(this.audioContext.destination);
-        
+
         // Настройка фильтра для мягкого звука
         filter.type = 'lowpass';
         filter.frequency.setValueAtTime(800, this.audioContext.currentTime);
         filter.Q.setValueAtTime(0.5, this.audioContext.currentTime);
-        
+
         // Средняя частота для приятного звука
         oscillator.frequency.setValueAtTime(600, this.audioContext.currentTime);
         oscillator.type = 'sine'; // Синусоидальная волна для самого мягкого звука
-        
+
         // Мягкий и приятный звук
         const now = this.audioContext.currentTime;
         gainNode.gain.setValueAtTime(0, now);
         gainNode.gain.linearRampToValueAtTime(0.06, now + 0.01);
         gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
-        
+
         // Запускаем осциллятор
         oscillator.start(now);
         oscillator.stop(now + 0.12);
     }
-    
+
     loadSkinsFromStorage() {
         // Загружаем информацию о купленных скинах
         const savedSkins = localStorage.getItem('babyVillagerSkins');
@@ -256,7 +256,7 @@ class BabyVillagerGame {
             });
         }
     }
-    
+
     saveSkinsToStorage() {
         // Сохраняем информацию о купленных скинах
         const skinsData = {};
@@ -265,21 +265,21 @@ class BabyVillagerGame {
         });
         localStorage.setItem('babyVillagerSkins', JSON.stringify(skinsData));
     }
-    
+
     drawSkinPreview(canvas, skinId) {
         const ctx = canvas.getContext('2d');
         const x = canvas.width / 2;
         const y = canvas.height / 2;
-        
+
         // Очищаем canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Включаем сглаживание
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
+
         // Рисуем скин в зависимости от типа
-        switch(skinId) {
+        switch (skinId) {
             case 'default':
                 this.drawDefaultSkin(ctx, x, y);
                 break;
@@ -297,52 +297,52 @@ class BabyVillagerGame {
                 break;
         }
     }
-    
+
     drawDefaultSkin(ctx, x, y) {
         // Классический скин - коричневый Baby Villager
         ctx.fillStyle = '#8B4513'; // Коричневый
         ctx.fillRect(x - 12, y - 12, 24, 24);
-        
+
         // Глаза
         ctx.fillStyle = 'white';
         ctx.fillRect(x - 8, y - 8, 4, 4);
         ctx.fillRect(x + 4, y - 8, 4, 4);
-        
+
         // Зрачки
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 6, y - 6, 2, 2);
         ctx.fillRect(x + 6, y - 6, 2, 2);
-        
+
         // Рот
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 4, y + 2, 8, 2);
     }
-    
+
     drawGoldenSkin(ctx, x, y) {
         // Золотой скин
         const gradient = ctx.createLinearGradient(x - 12, y - 12, x + 12, y + 12);
         gradient.addColorStop(0, '#FFD700');
         gradient.addColorStop(0.5, '#FFA500');
         gradient.addColorStop(1, '#FF8C00');
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(x - 12, y - 12, 24, 24);
-        
+
         // Глаза
         ctx.fillStyle = 'white';
         ctx.fillRect(x - 8, y - 8, 4, 4);
         ctx.fillRect(x + 4, y - 8, 4, 4);
-        
+
         // Зрачки
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 6, y - 6, 2, 2);
         ctx.fillRect(x + 6, y - 6, 2, 2);
-        
+
         // Рот
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 4, y + 2, 8, 2);
     }
-    
+
     drawRainbowSkin(ctx, x, y) {
         // Радужный скин
         const gradient = ctx.createLinearGradient(x - 12, y - 12, x + 12, y + 12);
@@ -352,49 +352,49 @@ class BabyVillagerGame {
         gradient.addColorStop(0.6, '#00FF00');
         gradient.addColorStop(0.8, '#0080FF');
         gradient.addColorStop(1, '#8000FF');
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(x - 12, y - 12, 24, 24);
-        
+
         // Глаза
         ctx.fillStyle = 'white';
         ctx.fillRect(x - 8, y - 8, 4, 4);
         ctx.fillRect(x + 4, y - 8, 4, 4);
-        
+
         // Зрачки
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 6, y - 6, 2, 2);
         ctx.fillRect(x + 6, y - 6, 2, 2);
-        
+
         // Рот
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 4, y + 2, 8, 2);
     }
-    
+
     drawFireSkin(ctx, x, y) {
         // Огненный скин
         const gradient = ctx.createRadialGradient(x, y, 0, x, y, 12);
         gradient.addColorStop(0, '#FF4500');
         gradient.addColorStop(0.5, '#FF6347');
         gradient.addColorStop(1, '#DC143C');
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(x - 12, y - 12, 24, 24);
-        
+
         // Глаза
         ctx.fillStyle = 'white';
         ctx.fillRect(x - 8, y - 8, 4, 4);
         ctx.fillRect(x + 4, y - 8, 4, 4);
-        
+
         // Зрачки
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 6, y - 6, 2, 2);
         ctx.fillRect(x + 6, y - 6, 2, 2);
-        
+
         // Рот
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 4, y + 2, 8, 2);
-        
+
         // Огненные эффекты
         ctx.fillStyle = '#FFD700';
         ctx.fillRect(x - 14, y - 10, 2, 4);
@@ -402,31 +402,31 @@ class BabyVillagerGame {
         ctx.fillRect(x - 10, y + 8, 3, 2);
         ctx.fillRect(x + 7, y + 10, 3, 2);
     }
-    
+
     drawIceSkin(ctx, x, y) {
         // Ледяной скин
         const gradient = ctx.createLinearGradient(x - 12, y - 12, x + 12, y + 12);
         gradient.addColorStop(0, '#B0E0E6');
         gradient.addColorStop(0.5, '#87CEEB');
         gradient.addColorStop(1, '#4682B4');
-        
+
         ctx.fillStyle = gradient;
         ctx.fillRect(x - 12, y - 12, 24, 24);
-        
+
         // Глаза
         ctx.fillStyle = 'white';
         ctx.fillRect(x - 8, y - 8, 4, 4);
         ctx.fillRect(x + 4, y - 8, 4, 4);
-        
+
         // Зрачки
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 6, y - 6, 2, 2);
         ctx.fillRect(x + 6, y - 6, 2, 2);
-        
+
         // Рот
         ctx.fillStyle = 'black';
         ctx.fillRect(x - 4, y + 2, 8, 2);
-        
+
         // Ледяные кристаллы
         ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.fillRect(x - 14, y - 6, 2, 2);
@@ -434,61 +434,61 @@ class BabyVillagerGame {
         ctx.fillRect(x - 8, y + 8, 2, 2);
         ctx.fillRect(x + 6, y + 10, 2, 2);
     }
-    
+
     playIOSBackgroundMusic() {
         if (this.backgroundMusicPlaying) return;
         this.backgroundMusicPlaying = true;
-        
+
         // Низкая фоновая мелодия в стиле iOS
         const melody = [130.81, 164.81, 196.00, 261.63]; // C, E, G, C (на октаву ниже)
         let noteIndex = 0;
-        
+
         const playNote = () => {
             if (!this.soundEnabled || this.gameState !== 'playing') {
                 this.backgroundMusicPlaying = false;
                 return;
             }
-            
+
             const oscillator = this.audioContext.createOscillator();
             const gainNode = this.audioContext.createGain();
             const filter = this.audioContext.createBiquadFilter();
-            
+
             oscillator.connect(filter);
             filter.connect(gainNode);
             gainNode.connect(this.audioContext.destination);
-            
+
             // Настройка для мягкого фонового звука
             filter.type = 'lowpass';
             filter.frequency.setValueAtTime(800, this.audioContext.currentTime);
-            
+
             oscillator.frequency.setValueAtTime(melody[noteIndex], this.audioContext.currentTime);
             gainNode.gain.setValueAtTime(0.02, this.audioContext.currentTime); // Очень тихо
             gainNode.gain.exponentialRampToValueAtTime(0.001, this.audioContext.currentTime + 1.5);
-            
+
             oscillator.start(this.audioContext.currentTime);
             oscillator.stop(this.audioContext.currentTime + 1.5);
-            
+
             noteIndex = (noteIndex + 1) % melody.length;
             setTimeout(playNote, 3000); // Каждые 3 секунды
         };
-        
+
         playNote();
     }
-    
-    
+
+
     toggleSound() {
         this.soundEnabled = !this.soundEnabled;
         localStorage.setItem('soundEnabled', this.soundEnabled.toString());
         this.updateSoundButton();
     }
-    
+
     updateSoundButton() {
         const soundBtn = document.getElementById('soundBtn');
         if (soundBtn) {
             soundBtn.textContent = this.soundEnabled ? '🔊' : '🔇';
         }
     }
-    
+
     init() {
         this.setupEventListeners();
         this.generateInitialPlatforms();
@@ -499,32 +499,32 @@ class BabyVillagerGame {
         this.initParallax();
         this.gameLoop();
     }
-    
+
     setupEventListeners() {
         // Кнопки
         document.getElementById('startBtn').addEventListener('click', () => this.startGame());
         document.getElementById('restartBtn').addEventListener('click', () => this.startGame());
-        
+
         const continueBtn = document.getElementById('continueBtn');
         if (continueBtn) {
             continueBtn.addEventListener('click', () => {
                 this.continueGame();
             });
         }
-        
+
         document.getElementById('menuBtn').addEventListener('click', () => this.showStartScreen());
         document.getElementById('soundBtn').addEventListener('click', () => this.toggleSound());
         document.getElementById('shopBtn').addEventListener('click', () => this.showShop());
         document.getElementById('backFromShopBtn').addEventListener('click', () => this.showStartScreen());
         document.getElementById('doubleJumpBtn').addEventListener('click', () => this.buyDoubleJump());
         document.getElementById('jumpBtn').addEventListener('click', () => this.jump());
-        
+
         // Обработчики для скинов
         document.querySelectorAll('.skin-item').forEach(item => {
             item.addEventListener('click', () => {
                 const skinId = item.getAttribute('data-skin');
                 const skin = this.shop.skins[skinId];
-                
+
                 if (skin.owned) {
                     // Если скин куплен, выбираем его
                     this.selectSkin(skinId);
@@ -534,7 +534,7 @@ class BabyVillagerGame {
                 }
             });
         });
-        
+
         // Управление только горизонтальным движением
         document.addEventListener('keydown', (e) => {
             this.keys[e.code] = true;
@@ -543,68 +543,68 @@ class BabyVillagerGame {
                 this.jump();
             }
         });
-        
+
         document.addEventListener('keyup', (e) => {
             this.keys[e.code] = false;
         });
-        
+
         // Мышь только для горизонтального движения
         this.canvas.addEventListener('mousemove', (e) => {
             const rect = this.canvas.getBoundingClientRect();
             this.mouseX = e.clientX - rect.left;
         });
-        
+
         // Виртуальные кнопки для мобильных устройств
         document.getElementById('leftBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.keys['ArrowLeft'] = true;
         });
-        
+
         document.getElementById('leftBtn').addEventListener('touchend', (e) => {
             e.preventDefault();
             this.keys['ArrowLeft'] = false;
         });
-        
+
         document.getElementById('rightBtn').addEventListener('touchstart', (e) => {
             e.preventDefault();
             this.keys['ArrowRight'] = true;
         });
-        
+
         document.getElementById('rightBtn').addEventListener('touchend', (e) => {
             e.preventDefault();
             this.keys['ArrowRight'] = false;
         });
-        
+
         // Обычные клики для кнопок (для тестирования на десктопе)
         document.getElementById('leftBtn').addEventListener('mousedown', (e) => {
             e.preventDefault();
             this.keys['ArrowLeft'] = true;
         });
-        
+
         document.getElementById('leftBtn').addEventListener('mouseup', (e) => {
             e.preventDefault();
             this.keys['ArrowLeft'] = false;
         });
-        
+
         document.getElementById('rightBtn').addEventListener('mousedown', (e) => {
             e.preventDefault();
             this.keys['ArrowRight'] = true;
         });
-        
+
         document.getElementById('rightBtn').addEventListener('mouseup', (e) => {
             e.preventDefault();
             this.keys['ArrowRight'] = false;
         });
-        
+
         // Убираем касания и клики для прыжков
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
         });
     }
-    
+
     generateInitialPlatforms() {
         this.platforms = [];
-        
+
         // Стартовая платформа
         this.platforms.push({
             x: this.canvas.width / 2 - 50,
@@ -614,18 +614,18 @@ class BabyVillagerGame {
             type: 'normal',
             color: '#8B4513'
         });
-        
+
         // Генерируем платформы выше (больше платформ для бесконечной игры)
         for (let i = 1; i < 100; i++) {
             this.generatePlatform(i * 80);
         }
     }
-    
+
     generatePlatform(y) {
         const type = this.platformTypes[Math.floor(Math.random() * this.platformTypes.length)];
         const width = type === 'spring' ? 60 : 80 + Math.random() * 40;
         const x = Math.random() * (this.canvas.width - width);
-        
+
         const platform = {
             x: x,
             y: y,
@@ -637,9 +637,9 @@ class BabyVillagerGame {
             direction: type === 'moving' ? (Math.random() > 0.5 ? 1 : -1) : 0,
             broken: false
         };
-        
+
         this.platforms.push(platform);
-        
+
         // Добавляем монету на платформу с вероятностью 30%
         if (Math.random() < 0.3) {
             this.coins.push({
@@ -652,12 +652,12 @@ class BabyVillagerGame {
                 value: 1
             });
         }
-        
+
         // Добавляем реактивный ранец на каждые 500 единиц высоты
         const heightInterval = 500;
         const currentHeight = Math.abs(y);
         const jetpackHeight = Math.floor(currentHeight / heightInterval) * heightInterval;
-        
+
         if (Math.abs(currentHeight - jetpackHeight) < 50 && Math.random() < 0.15) {
             this.jetpacks.push({
                 x: x + width / 2 - 12, // Центр платформы
@@ -668,7 +668,7 @@ class BabyVillagerGame {
             });
         }
     }
-    
+
     getPlatformColor(type) {
         const colors = {
             'normal': '#8B4513',
@@ -678,7 +678,7 @@ class BabyVillagerGame {
         };
         return colors[type] || '#8B4513';
     }
-    
+
     startGame() {
         this.gameState = 'playing';
         this.score = 0;
@@ -702,17 +702,17 @@ class BabyVillagerGame {
         this.camera.y = 0;
         this.platforms = [];
         this.generateInitialPlatforms();
-        
+
         // Устанавливаем призрака на высоту последнего счета
         this.setupGhost();
-        
+
         this.showGameScreen();
         this.updateUI();
-        
+
         // Запускаем фоновую музыку
         this.sounds.background();
     }
-    
+
     setupGhost() {
         if (this.lastScore > 0) {
             // Конвертируем счет в высоту (примерно 10 пикселей за очко)
@@ -722,11 +722,11 @@ class BabyVillagerGame {
         } else {
             this.ghost.visible = false;
         }
-        
+
         // Генерируем фейковых призраков
         this.generateFakeGhosts();
     }
-    
+
     generateFakeGhosts() {
         this.fakeGhosts = [];
         // Плавное распределение призраков по высотам:
@@ -734,10 +734,10 @@ class BabyVillagerGame {
         // 2500-5000: пореже (70-40%) 
         // 5000-7500: еще реже (40-15%)
         // 7500-10000: совсем редко (15-5%)
-        
+
         for (let score = 50; score <= 20000; score += 25) { // Увеличили до 20000 для покрытия больших высот
             let probability;
-            
+
             if (score <= 2500) {
                 // 1-2500: часто появляются (90-70%)
                 probability = 0.90 - (score - 50) / 2450 * 0.20; // От 90% до 70%
@@ -754,17 +754,17 @@ class BabyVillagerGame {
                 // 10000+: минимальная вероятность, но не нулевая (5-2%)
                 probability = Math.max(0.02, 0.05 - (score - 10000) / 10000 * 0.03); // От 5% до 2%
             }
-            
+
             // Проверяем, должен ли появиться призрак на этой высоте
             if (Math.random() < probability) {
                 // Добавляем небольшую случайность к высоте
                 const randomOffset = Math.floor(Math.random() * 20) - 10; // ±10 очков
                 const finalScore = Math.max(20, score + randomOffset);
-                
+
                 this.addFakeGhost(finalScore);
             }
         }
-        
+
         // Гарантируем призраков на каждом уровне - добавляем недостающих
         const levelRanges = [
             { min: 50, max: 2500, step: 200, minCount: 8 },    // Низкие уровни
@@ -774,7 +774,7 @@ class BabyVillagerGame {
             { min: 10000, max: 15000, step: 1000, minCount: 1 }, // Экстремальные высоты
             { min: 15000, max: 20000, step: 2000, minCount: 1 }  // Максимальные высоты
         ];
-        
+
         for (const range of levelRanges) {
             let countInRange = 0;
             // Подсчитываем призраков в этом диапазоне
@@ -784,7 +784,7 @@ class BabyVillagerGame {
                     countInRange++;
                 }
             }
-            
+
             // Добавляем недостающих призраков
             while (countInRange < range.minCount) {
                 const score = range.min + Math.floor(Math.random() * (range.max - range.min));
@@ -793,22 +793,22 @@ class BabyVillagerGame {
             }
         }
     }
-    
+
     addFakeGhost(score) {
         const fakeHeight = this.canvas.height - score * 10;
-        
+
         // Проверяем, что фейковый призрак не слишком близко к реальному
         if (this.lastScore > 0 && Math.abs(fakeHeight - this.ghost.y) < 80) {
             return;
         }
-        
+
         // Проверяем, что призрак не слишком близко к другим
         for (let existingGhost of this.fakeGhosts) {
             if (Math.abs(fakeHeight - existingGhost.y) < 60) {
                 return;
             }
         }
-        
+
         const fakeGhost = {
             name: this.generateRandomNickname(),
             y: fakeHeight,
@@ -817,9 +817,9 @@ class BabyVillagerGame {
             color: this.getRandomGhostColor(),
             style: Math.floor(Math.random() * 3)
         };
-        
+
         this.fakeGhosts.push(fakeGhost);
-        
+
         // Ограничиваем общее количество призраков (не более 100)
         // Удаляем только призраков с низких высот, чтобы сохранить высокие
         if (this.fakeGhosts.length > 100) {
@@ -828,11 +828,11 @@ class BabyVillagerGame {
             this.fakeGhosts.splice(-10, 10); // Удаляем 10 самых низких
         }
     }
-    
+
     generateRandomNickname() {
         const prefix = this.nicknamePrefixes[Math.floor(Math.random() * this.nicknamePrefixes.length)];
         const suffix = this.nicknameSuffixes[Math.floor(Math.random() * this.nicknameSuffixes.length)];
-        
+
         // 70% шанс на prefix + suffix, 30% только prefix
         if (Math.random() < 0.7) {
             return prefix + suffix;
@@ -840,7 +840,7 @@ class BabyVillagerGame {
             return prefix;
         }
     }
-    
+
     getRandomGhostColor() {
         const colors = [
             '#E0E0E0', // Светло-серый
@@ -852,7 +852,7 @@ class BabyVillagerGame {
         ];
         return colors[Math.floor(Math.random() * colors.length)];
     }
-    
+
     showStartScreen() {
         document.getElementById('startScreen').classList.remove('hidden');
         document.getElementById('gameScreen').classList.add('hidden');
@@ -860,54 +860,54 @@ class BabyVillagerGame {
         document.getElementById('shopScreen').classList.add('hidden');
         this.gameState = 'start';
     }
-    
+
     showShop() {
         document.getElementById('startScreen').classList.add('hidden');
         document.getElementById('shopScreen').classList.remove('hidden');
         this.updateShopScreen();
         this.updateShopSkins();
     }
-    
+
     updateShopScreen() {
         // Обновляем счетчик монет в магазине
         const shopCoinCountElement = document.getElementById('shopCoinCount');
         if (shopCoinCountElement) {
             shopCoinCountElement.textContent = this.totalCoins;
         }
-        
+
         // Отрисовываем иконку монеты в магазине
         this.drawShopCoinIcon();
-        
+
         // Обновляем состояние кнопок магазина
         this.updateShopButtons();
     }
-    
+
     drawShopCoinIcon() {
         const canvas = document.getElementById('shopCoinIcon');
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext('2d');
         const x = canvas.width / 2;
         const y = canvas.height / 2;
         const animation = Date.now() * 0.01;
-        
+
         // Очищаем canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Анимация парения
         const floatOffset = Math.sin(animation * 0.8) * 1;
         const currentY = y + floatOffset;
-        
+
         // Включаем сглаживание для лучшего качества
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
+
         // Простой золотой круг (как в иконке) - увеличенный размер
         ctx.fillStyle = '#FFD700'; // Яркий золотой цвет
         ctx.beginPath();
         ctx.arc(x, currentY, 18, 0, Math.PI * 2); // Увеличиваем радиус с 9 до 18
         ctx.fill();
-        
+
         // Белая буква "Р" в центре - увеличенный шрифт
         ctx.fillStyle = 'white';
         ctx.font = 'bold 18px Arial'; // Увеличиваем шрифт с 9px до 18px
@@ -915,30 +915,30 @@ class BabyVillagerGame {
         ctx.textBaseline = 'middle';
         ctx.fillText('Р', x, currentY);
     }
-    
+
     showGameScreen() {
         document.getElementById('startScreen').classList.add('hidden');
         document.getElementById('gameScreen').classList.remove('hidden');
         document.getElementById('gameOverScreen').classList.add('hidden');
     }
-    
+
     showGameOverScreen() {
         document.getElementById('startScreen').classList.add('hidden');
         document.getElementById('gameScreen').classList.add('hidden');
         document.getElementById('gameOverScreen').classList.remove('hidden');
         this.gameState = 'gameOver';
-        
+
         // Сохраняем позицию камеры и счет для продолжения
         // Используем сохраненные значения падения, если они есть
         this.savedCameraY = this.fallingStartCameraY || this.camera.y;
         this.savedScore = this.fallingStartScore || this.score;
-        
+
         const finalScore = document.getElementById('finalScore');
         const newRecord = document.getElementById('newRecord');
         const continueBtn = document.getElementById('continueBtn');
-        
+
         finalScore.textContent = `Ваш счет: ${this.score}`;
-        
+
         if (this.score > this.highScore) {
             this.highScore = this.score;
             localStorage.setItem('babyVillagerHighScore', this.highScore.toString());
@@ -946,7 +946,7 @@ class BabyVillagerGame {
         } else {
             newRecord.classList.add('hidden');
         }
-        
+
         // Показываем кнопку продолжения только если есть попытки
         if (this.continueAttempts > 0) {
             continueBtn.style.display = 'flex';
@@ -954,13 +954,13 @@ class BabyVillagerGame {
         } else {
             continueBtn.style.display = 'none';
         }
-        
+
         this.updateUI();
     }
-    
+
     continueGame() {
         console.log('Нажата кнопка "Продолжить"');
-        
+
         // Показываем рекламу для продолжения игры
         if (typeof YaGames !== 'undefined' && window.ysdk) {
             console.log('Показываем рекламу...');
@@ -989,26 +989,26 @@ class BabyVillagerGame {
             this.resumeGame();
         }
     }
-    
+
     resumeGame() {
         // Продолжаем игру с того же места
         this.gameState = 'playing';
-        
+
         // Уменьшаем количество попыток
         this.continueAttempts--;
-        
+
         // Восстанавливаем сохраненную позицию камеры и счет
         this.camera.y = this.savedCameraY || this.camera.y;
         this.score = this.savedScore || this.score;
-        
+
         // Позиционируем игрока на безопасной высоте относительно камеры
         // Игрок должен быть виден на экране
         const targetPlayerY = this.camera.y + this.canvas.height * 0.3;
         this.player.y = targetPlayerY;
-        
+
         // Сохраняем стартовую позицию игрока для расчета счета
         this.startPlayerY = this.player.y;
-        
+
         console.log('Продолжение игры - настройка:');
         console.log('- Восстановленная камера:', this.camera.y);
         console.log('- Восстановленный счет:', this.score);
@@ -1017,34 +1017,34 @@ class BabyVillagerGame {
         this.player.velocityY = 0;
         this.player.velocityX = 0;
         this.player.onGround = false;
-        
+
         // Генерируем платформы вокруг новой позиции игрока
         this.generatePlatformsAroundPlayer();
-        
+
         this.showGameScreen();
         this.updateUI();
-        
+
         // Запускаем фоновую музыку
         this.sounds.background();
     }
-    
+
     generatePlatformsAroundPlayer() {
         // Генерируем платформы в радиусе вокруг игрока
         const playerY = this.player.y;
         const platformSpacing = 80;
         const range = 400; // Генерируем платформы в радиусе 400 пикселей
-        
+
         // Очищаем старые платформы
         this.platforms = [];
-        
+
         // Генерируем платформы выше и ниже игрока
         for (let y = playerY - range; y <= playerY + range; y += platformSpacing) {
             // Пропускаем если платформа слишком близко к игроку
             if (Math.abs(y - playerY) < 50) continue;
-            
+
             this.generatePlatform(y);
         }
-        
+
         // Добавляем стартовую платформу под игроком
         this.platforms.push({
             x: this.player.x - 50,
@@ -1054,32 +1054,32 @@ class BabyVillagerGame {
             type: 'normal',
             color: '#8B4513'
         });
-        
+
         // Генерируем дополнительные платформы выше для продолжения игры
         this.generateAdditionalPlatformsAbove(playerY);
     }
-    
+
     generateAdditionalPlatformsAbove(startY) {
         // Генерируем платформы выше стартовой позиции для бесконечной игры
         const platformSpacing = 80;
         const maxHeight = startY - 2000; // Генерируем на 2000 пикселей выше
-        
+
         for (let y = startY - 200; y >= maxHeight; y -= platformSpacing) {
             this.generatePlatform(y);
         }
     }
-    
+
     restartGame() {
         // Сохраняем текущий счет как последний
         this.lastScore = this.score;
         localStorage.setItem('babyVillagerLastScore', this.lastScore.toString());
-        
+
         // Обновляем рекорд если нужно
         if (this.score > this.highScore) {
             this.highScore = this.score;
             localStorage.setItem('babyVillagerHighScore', this.highScore.toString());
         }
-        
+
         // Полный перезапуск игры
         this.gameState = 'playing';
         this.score = 0;
@@ -1107,20 +1107,20 @@ class BabyVillagerGame {
         this.playerJetpackActive = false;
         this.jetpackTimeLeft = 0;
         this.generateInitialPlatforms();
-        
+
         // Устанавливаем призрака на новую высоту
         this.setupGhost();
-        
+
         this.showGameScreen();
         this.updateUI();
-        
+
         // Запускаем фоновую музыку
         this.sounds.background();
     }
-    
+
     jump() {
         if (this.gameState !== 'playing') return;
-        
+
         if (this.player.onGround) {
             // Обычный прыжок с земли
             this.player.velocityY = this.player.jumpPower;
@@ -1137,11 +1137,11 @@ class BabyVillagerGame {
             this.sounds.jump();
         }
     }
-    
+
     autoJump() {
         // Автоматический прыжок при приземлении на платформу
         if (this.gameState !== 'playing') return;
-        
+
         if (this.player.onGround) {
             this.player.velocityY = this.player.jumpPower;
             this.player.onGround = false;
@@ -1150,10 +1150,10 @@ class BabyVillagerGame {
             this.sounds.jump();
         }
     }
-    
+
     updatePlayer() {
         if (this.gameState !== 'playing') return;
-        
+
         // Горизонтальное движение (только клавиатура)
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
             this.player.velocityX = Math.max(this.player.velocityX - 0.5, -this.player.maxSpeed);
@@ -1162,18 +1162,18 @@ class BabyVillagerGame {
         } else {
             this.player.velocityX *= this.friction;
         }
-        
+
         // Применяем гравитацию или эффект реактивного ранца
         if (this.playerJetpackActive) {
             // Реактивный ранец - плавное набирание скорости
             const jetpackAcceleration = 0.8; // Ускорение ранца (увеличено)
             const maxJetpackSpeed = -18; // Максимальная скорость вверх от ранца (увеличено)
-            
+
             // Плавно набираем скорость до максимума
             if (this.player.velocityY > maxJetpackSpeed) {
                 this.player.velocityY -= jetpackAcceleration;
             }
-            
+
             // Ограничиваем максимальную скорость
             if (this.player.velocityY < maxJetpackSpeed) {
                 this.player.velocityY = maxJetpackSpeed;
@@ -1182,36 +1182,36 @@ class BabyVillagerGame {
             // Обычная гравитация
             this.player.velocityY += this.gravity;
         }
-        
+
         // Обновляем позицию
         this.player.x += this.player.velocityX;
         this.player.y += this.player.velocityY;
-        
+
         // Обновляем состояние анимации
         this.updateAnimationState();
-        
+
         // Ограничиваем движение по горизонтали
         if (this.player.x < 0) {
             this.player.x = this.canvas.width;
         } else if (this.player.x > this.canvas.width) {
             this.player.x = 0;
         }
-        
+
         // Проверяем коллизии с платформами
         this.checkPlatformCollisions();
-        
+
         // Автоматический прыжок при приземлении
         this.autoJump();
-        
+
         // Обновляем камеру
         this.updateCamera();
-        
+
         // Проверяем смерть и показываем Game Over экран
         if (this.player.y > this.camera.y + this.canvas.height + 300) {
             this.sounds.gameOver();
             this.showGameOverScreen();
         }
-        
+
         // Сохраняем позицию камеры когда игрок начинает падать
         // Это нужно для правильного расчета счета при продолжении
         if (this.player.velocityY > 0 && this.player.y > this.camera.y + this.canvas.height * 0.5) {
@@ -1225,35 +1225,35 @@ class BabyVillagerGame {
             this.fallingStartCameraY = null;
             this.fallingStartScore = null;
         }
-        
+
         // Генерируем новые платформы
         this.generateNewPlatforms();
     }
-    
+
     checkPlatformCollisions() {
         this.player.onGround = false;
-        
+
         for (let platform of this.platforms) {
             if (platform.broken) continue;
-            
+
             if (this.player.x < platform.x + platform.width &&
                 this.player.x + this.player.width > platform.x &&
                 this.player.y + this.player.height > platform.y &&
                 this.player.y + this.player.height < platform.y + platform.height + 10 &&
                 this.player.velocityY > 0) {
-                
+
                 this.player.y = platform.y - this.player.height;
                 this.player.velocityY = 0;
                 this.player.onGround = true;
                 this.player.doubleJumpAvailable = false;
                 this.player.doubleJumpUsed = false;
-                
+
                 // Обработка разных типов платформ
                 this.handlePlatformType(platform);
             }
         }
     }
-    
+
     handlePlatformType(platform) {
         switch (platform.type) {
             case 'spring':
@@ -1273,133 +1273,133 @@ class BabyVillagerGame {
                 break;
         }
     }
-    
+
     updateCamera() {
         // Камера следует за персонажем в обе стороны (вверх и вниз)
         const targetY = this.player.y - this.canvas.height * 0.6;
         const cameraSpeed = 0.1;
         this.camera.y = this.camera.y + (targetY - this.camera.y) * cameraSpeed;
     }
-    
+
     generateNewPlatforms() {
         // Генерируем платформы только сверху бесконечно
         const highestPlatform = Math.min(...this.platforms.map(p => p.y));
-        
+
         // Генерируем платформы сверху
         if (highestPlatform > this.camera.y - 200) {
             this.generatePlatform(highestPlatform - 80);
         }
-        
+
         // Очищаем старые платформы для оптимизации
         this.cleanupOldPlatforms();
     }
-    
+
     cleanupOldPlatforms() {
         // Удаляем платформы, которые ушли за нижнюю границу экрана
-        this.platforms = this.platforms.filter(platform => 
-            platform.y > this.camera.y - 400 && 
+        this.platforms = this.platforms.filter(platform =>
+            platform.y > this.camera.y - 400 &&
             platform.y < this.camera.y + this.canvas.height + 100
         );
     }
-    
+
     updatePlatforms() {
         for (let platform of this.platforms) {
             if (platform.type === 'moving') {
                 platform.x += platform.velocityX * platform.direction;
-                
+
                 if (platform.x <= 0 || platform.x + platform.width >= this.canvas.width) {
                     platform.direction *= -1;
                 }
             }
-            
+
         }
     }
-    
+
     updateCoins() {
         for (let coin of this.coins) {
             if (!coin.collected) {
                 coin.animation += 0.2;
-                
+
                 // Проверяем столкновение с игроком
                 if (this.player.x < coin.x + coin.width &&
                     this.player.x + this.player.width > coin.x &&
                     this.player.y < coin.y + coin.height &&
                     this.player.y + this.player.height > coin.y) {
-                    
+
                     coin.collected = true;
                     this.coinsCollected++;
                     this.totalCoins++;
                     localStorage.setItem('babyVillagerCoins', this.totalCoins.toString());
-                    
+
                     // Звук сбора монеты
                     this.sounds.coin();
                 }
             }
         }
-        
+
         // Удаляем собранные монеты и монеты, ушедшие за нижнюю границу экрана
         this.coins = this.coins.filter(coin => {
             if (coin.collected) return false;
-            
+
             // Удаляем монеты, которые ушли за нижнюю границу экрана
             const coinBottom = coin.y + coin.height;
             const screenBottom = this.camera.y + this.canvas.height;
-            
+
             if (coinBottom > screenBottom + 100) { // +100 для буфера
                 return false;
             }
-            
+
             return true;
         });
     }
-    
+
     updateJetpacks() {
         for (let jetpack of this.jetpacks) {
             if (!jetpack.collected) {
                 jetpack.animation += 0.15;
-                
+
                 // Проверяем столкновение с игроком
                 if (this.player.x < jetpack.x + jetpack.size &&
                     this.player.x + this.player.width > jetpack.x &&
                     this.player.y < jetpack.y + jetpack.size &&
                     this.player.y + this.player.height > jetpack.y) {
-                    
+
                     jetpack.collected = true;
                     this.playerJetpackActive = true;
                     this.jetpackTimeLeft = this.jetpackDuration;
-                    
+
                     // Звук сбора реактивного ранца
                     this.sounds.coin(); // Используем тот же звук, что и для монет
                 }
             }
         }
-        
+
         // Удаляем собранные ранцы и ранцы, ушедшие за нижнюю границу экрана
         this.jetpacks = this.jetpacks.filter(jetpack => {
             if (jetpack.collected) return false;
-            
+
             // Удаляем ранцы, которые ушли за нижнюю границу экрана
             const jetpackBottom = jetpack.y + jetpack.size;
             const screenBottom = this.camera.y + this.canvas.height;
-            
+
             if (jetpackBottom > screenBottom + 100) { // +100 для буфера
                 return false;
             }
-            
+
             return true;
         });
-        
+
         // Обновляем состояние реактивного ранца игрока
         if (this.playerJetpackActive) {
             this.jetpackTimeLeft -= 16; // Примерно 60 FPS
-            
+
             if (this.jetpackTimeLeft <= 0) {
                 this.playerJetpackActive = false;
                 this.jetpackTimeLeft = 0;
             }
         }
     }
-    
+
     updateScore() {
         // При продолжении игры используем startPlayerY, иначе обычный расчет
         if (this.startPlayerY !== undefined) {
@@ -1407,7 +1407,7 @@ class BabyVillagerGame {
             const currentHeight = this.startPlayerY - this.player.y;
             const additionalScore = Math.max(0, Math.floor(currentHeight / 10));
             const newScore = this.savedScore + additionalScore;
-            
+
             if (newScore > this.score) {
                 this.score = newScore;
                 this.updateUI();
@@ -1416,81 +1416,81 @@ class BabyVillagerGame {
             // Обычная игра - считаем от высоты экрана
             const currentHeight = this.canvas.height - this.player.y;
             const newScore = Math.max(0, Math.floor(currentHeight / 10));
-            
+
             if (newScore > this.score) {
                 this.score = newScore;
                 this.updateUI();
             }
         }
     }
-    
+
     updateGhost() {
         if (this.ghost.visible) {
             // Анимация призрака (плавное покачивание)
             this.ghost.animation += 0.1;
         }
-        
+
         // Обновляем анимацию фейковых призраков
         for (let fakeGhost of this.fakeGhosts) {
             fakeGhost.animation += 0.05 + Math.random() * 0.05; // Разная скорость анимации
         }
     }
-    
+
     updateUI() {
         document.getElementById('score').textContent = this.score;
-        
+
         // Обновляем счетчик монет
         const coinCountElement = document.getElementById('coinCount');
         if (coinCountElement) {
             coinCountElement.textContent = this.totalCoins;
         }
-        
+
         // Обновляем счетчик двойных прыжков
         const doubleJumpCountElement = document.getElementById('doubleJumpCount');
         if (doubleJumpCountElement) {
             doubleJumpCountElement.textContent = this.shop.doubleJumpCount;
         }
-        
+
         // Обновляем состояние мобильной кнопки двойного прыжка
         this.updateMobileJumpButton();
-        
+
         // Отрисовываем иконку монеты
         this.drawCoinIcon();
-        
+
         // Обновляем статистику на главном экране
         this.updateMainScreenStats();
     }
-    
+
     updateMainScreenStats() {
         // Обновляем рекорд на главном экране
         const mainHighScoreElement = document.getElementById('mainHighScore');
         if (mainHighScoreElement) {
             mainHighScoreElement.textContent = this.highScore;
         }
-        
+
         // Обновляем количество монет на главном экране
         const mainCoinCountElement = document.getElementById('mainCoinCount');
         if (mainCoinCountElement) {
             mainCoinCountElement.textContent = this.totalCoins;
         }
-        
+
         // Отрисовываем иконку монеты на главном экране
         this.drawMainCoinIcon();
-        
+
         // Обновляем состояние кнопок магазина
         this.updateShopButtons();
     }
-    
+
     updateMobileJumpButton() {
         const jumpBtn = document.getElementById('jumpBtn');
         if (jumpBtn) {
             // Кнопка активна только если есть двойные прыжки и игрок может их использовать
-            const canUseDoubleJump = this.shop.doubleJumpCount > 0 && 
-                                   this.player.doubleJumpAvailable && 
-                                   !this.player.doubleJumpUsed;
-            
+            const canUseDoubleJump = this.shop.doubleJumpCount > 0 &&
+                this.player.doubleJumpAvailable &&
+                !this.player.doubleJumpUsed;
+
             jumpBtn.disabled = !canUseDoubleJump;
-            
+
             if (canUseDoubleJump) {
                 jumpBtn.style.background = 'rgba(0, 150, 0, 0.3)';
                 jumpBtn.style.borderColor = 'rgba(0, 255, 0, 0.8)';
@@ -1500,59 +1500,59 @@ class BabyVillagerGame {
             }
         }
     }
-    
+
     initParallax() {
         // Облака рисуются динамически в drawClouds()
-        
+
         // Горы убраны
-        
+
         // Деревья убраны - они мешают видимости персонажа
     }
-    
+
     // getMountainColor убрана - горы больше не используются
-    
+
     // getTreeColor убрана - деревья больше не используются
-    
+
     updateParallax() {
         // Обновляем только во время игры
         if (this.gameState !== 'playing') return;
-        
+
         // Обновляем время суток
         this.updateTimeOfDay();
-        
+
         // Облака рисуются динамически в drawClouds()
-        
+
         // Деревья убраны
     }
-    
+
     updateTimeOfDay() {
         const currentHeight = Math.abs(this.camera.y);
-        
+
         // Циклическая смена фона без сброса камеры
         const cycleHeight = currentHeight % this.cycleHeight;
-        
+
         if (cycleHeight > this.nightHeight) {
             this.timeOfDay = 'night';
         } else {
             this.timeOfDay = 'day';
         }
     }
-    
+
     drawParallax() {
         // Рисуем небо с градиентом (самый задний план)
         this.drawSky();
-        
+
         // Рисуем облака (передний план)
         this.drawClouds();
     }
-    
+
     drawSky() {
         // Небо должно покрывать всю видимую область с учетом камеры
         const skyY = this.camera.y;
         const skyHeight = this.canvas.height + Math.abs(this.camera.y);
-        
+
         const gradient = this.ctx.createLinearGradient(0, skyY, 0, skyY + skyHeight);
-        
+
         switch (this.timeOfDay) {
             case 'day':
                 gradient.addColorStop(0, '#87CEEB'); // Небесно-голубой
@@ -1564,29 +1564,29 @@ class BabyVillagerGame {
                 gradient.addColorStop(1, '#000000'); // Черный
                 break;
         }
-        
+
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, skyY, this.canvas.width, skyHeight);
-        
+
         // Рисуем звезды ночью
         if (this.timeOfDay === 'night') {
             this.drawStars();
         }
     }
-    
+
     drawStars() {
         this.ctx.fillStyle = 'white';
         for (let i = 0; i < 50; i++) {
             const x = (i * 37) % this.canvas.width;
             const y = this.camera.y + (i * 23) % (this.canvas.height / 2);
             const size = Math.random() * 2;
-            
+
             this.ctx.beginPath();
             this.ctx.arc(x, y, size, 0, Math.PI * 2);
             this.ctx.fill();
         }
     }
-    
+
     updateShopButtons() {
         const doubleJumpBtn = document.getElementById('doubleJumpBtn');
         if (doubleJumpBtn) {
@@ -1615,7 +1615,7 @@ class BabyVillagerGame {
             }
         }
     }
-    
+
     updateShopSkins() {
         // Обновляем превью скинов
         Object.keys(this.shop.skins).forEach(skinId => {
@@ -1624,12 +1624,12 @@ class BabyVillagerGame {
                 const canvas = skinItem.querySelector('.skin-preview');
                 const priceElement = skinItem.querySelector('.skin-price');
                 const skin = this.shop.skins[skinId];
-                
+
                 // Рисуем превью
                 if (canvas) {
                     this.drawSkinPreview(canvas, skinId);
                 }
-                
+
                 // Обновляем цену
                 if (priceElement) {
                     if (skin.owned) {
@@ -1638,7 +1638,7 @@ class BabyVillagerGame {
                         priceElement.textContent = skin.price.toString();
                     }
                 }
-                
+
                 // Обновляем классы
                 skinItem.classList.remove('owned', 'selected');
                 if (skin.owned) {
@@ -1650,25 +1650,25 @@ class BabyVillagerGame {
             }
         });
     }
-    
+
     buyDoubleJump() {
         if (this.totalCoins >= this.shop.prices.doubleJump) {
             this.totalCoins -= this.shop.prices.doubleJump;
             this.shop.doubleJumpCount += 1; // Покупаем 1 двойной прыжок за 50 монет
-            
+
             // Сохраняем в localStorage
             localStorage.setItem('babyVillagerCoins', this.totalCoins.toString());
             localStorage.setItem('babyVillagerDoubleJumpCount', this.shop.doubleJumpCount.toString());
-            
+
             // Обновляем UI
             this.updateMainScreenStats();
             this.updateShopScreen();
-            
+
             // Звук покупки
             this.sounds.coin();
         }
     }
-    
+
     buySkin(skinId) {
         const skin = this.shop.skins[skinId];
         if (skin && !skin.owned && this.totalCoins >= skin.price) {
@@ -1681,7 +1681,7 @@ class BabyVillagerGame {
             this.sounds.coin();
         }
     }
-    
+
     selectSkin(skinId) {
         const skin = this.shop.skins[skinId];
         if (skin && skin.owned) {
@@ -1691,33 +1691,33 @@ class BabyVillagerGame {
             this.updateMainScreenCharacter(); // Обновляем персонажа на главном экране
         }
     }
-    
+
     drawMainCoinIcon() {
         const canvas = document.getElementById('mainCoinIcon');
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext('2d');
         const x = canvas.width / 2;
         const y = canvas.height / 2;
         const animation = Date.now() * 0.01;
-        
+
         // Очищаем canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Анимация парения
         const floatOffset = Math.sin(animation * 0.8) * 1;
         const currentY = y + floatOffset;
-        
+
         // Включаем сглаживание для лучшего качества
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
+
         // Простой золотой круг (как в иконке) - увеличенный размер
         ctx.fillStyle = '#FFD700'; // Яркий золотой цвет
         ctx.beginPath();
         ctx.arc(x, currentY, 18, 0, Math.PI * 2); // Увеличиваем радиус с 9 до 18
         ctx.fill();
-        
+
         // Белая буква "Р" в центре - увеличенный шрифт
         ctx.fillStyle = 'white';
         ctx.font = 'bold 18px Arial'; // Увеличиваем шрифт с 9px до 18px
@@ -1725,33 +1725,33 @@ class BabyVillagerGame {
         ctx.textBaseline = 'middle';
         ctx.fillText('Р', x, currentY);
     }
-    
+
     drawCoinIcon() {
         const canvas = document.getElementById('coinIcon');
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext('2d');
         const x = canvas.width / 2;
         const y = canvas.height / 2;
         const animation = Date.now() * 0.01;
-        
+
         // Очищаем canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Анимация парения
         const floatOffset = Math.sin(animation * 0.8) * 1.5;
         const currentY = y + floatOffset;
-        
+
         // Включаем сглаживание для лучшего качества
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
+
         // Простой золотой круг (как в иконке) - увеличенный размер
         ctx.fillStyle = '#FFD700'; // Яркий золотой цвет
         ctx.beginPath();
         ctx.arc(x, currentY, 24, 0, Math.PI * 2); // Увеличиваем радиус с 12 до 24
         ctx.fill();
-        
+
         // Белая буква "Р" в центре - увеличенный шрифт
         ctx.fillStyle = 'white';
         ctx.font = 'bold 24px Arial'; // Увеличиваем шрифт с 12px до 24px
@@ -1759,75 +1759,75 @@ class BabyVillagerGame {
         ctx.textBaseline = 'middle';
         ctx.fillText('Р', x, currentY);
     }
-    
+
     render() {
         // Очищаем canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         if (this.gameState !== 'playing') return;
-        
+
         // Сохраняем контекст
         this.ctx.save();
-        
+
         // Применяем камеру
         this.ctx.translate(0, -this.camera.y);
-        
+
         // Рисуем параллакс (включает небо, горы, деревья, облака)
         this.drawParallax();
-        
+
         // Рисуем платформы
         this.drawPlatforms();
-        
+
         // Рисуем фейковых призраков
         this.drawFakeGhosts();
-        
+
         // Рисуем призрака
         this.drawGhost();
-        
+
         // Рисуем игрока
         this.drawPlayer();
-        
+
         // Восстанавливаем контекст
         this.ctx.restore();
     }
-    
+
     drawBackground() {
         // Градиентный фон
         const gradient = this.ctx.createLinearGradient(0, this.camera.y, 0, this.camera.y + this.canvas.height);
         gradient.addColorStop(0, '#87CEEB');
         gradient.addColorStop(0.5, '#98FB98');
         gradient.addColorStop(1, '#90EE90');
-        
+
         this.ctx.fillStyle = gradient;
         this.ctx.fillRect(0, this.camera.y, this.canvas.width, this.canvas.height);
-        
+
         // Облака
         this.drawClouds();
     }
-    
+
     drawClouds() {
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         // Оптимизация: рисуем только видимые облака
         const startY = this.camera.y;
         const endY = this.camera.y + this.canvas.height;
-        
+
         for (let i = 0; i < 8; i++) {
             // Горизонтальное движение с циклическим возвратом
             let x = (i * 150 + this.frameCount * 0.3) % (this.canvas.width + 200) - 100;
             const y = this.camera.y + 50 + (i * 60) % 150;
-            
+
             // Если облако ушло за левый край, возвращаем его справа
             if (x < -100) {
                 x = this.canvas.width + 100 + (i * 50) % 100;
             }
-            
+
             // Рисуем только если облако в видимой области
             if (y >= startY - 50 && y <= endY + 50) {
                 this.drawCloud(x, y);
             }
         }
     }
-    
+
     drawCloud(x, y) {
         this.ctx.beginPath();
         this.ctx.arc(x, y, 20, 0, Math.PI * 2);
@@ -1836,7 +1836,7 @@ class BabyVillagerGame {
         this.ctx.arc(x + 25, y - 15, 20, 0, Math.PI * 2);
         this.ctx.fill();
     }
-    
+
     drawPlatforms() {
         // Оптимизация: рисуем только видимые платформы
         const visiblePlatforms = this.platforms.filter(platform => {
@@ -1844,113 +1844,113 @@ class BabyVillagerGame {
             const screenY = platform.y - this.camera.y;
             return screenY >= -50 && screenY <= this.canvas.height + 50;
         });
-        
-        
+
+
         for (let platform of visiblePlatforms) {
             if (!platform.broken) {
                 this.ctx.fillStyle = platform.color;
                 this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-                
+
                 // Детали платформы
                 this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
                 this.ctx.fillRect(platform.x, platform.y, platform.width, 5);
-                
+
                 // Специальные эффекты
                 if (platform.type === 'spring') {
                     this.ctx.fillStyle = '#FFD700';
-                    this.ctx.fillRect(platform.x + platform.width/2 - 10, platform.y - 5, 20, 5);
+                    this.ctx.fillRect(platform.x + platform.width / 2 - 10, platform.y - 5, 20, 5);
                 }
             }
         }
-        
+
         // Отрисовка монет
         this.drawCoins();
-        
+
         // Отрисовка реактивных ранцев
         this.drawJetpacks();
     }
-    
+
     drawCoins() {
         const visibleCoins = this.coins.filter(coin => {
             if (coin.collected) return false;
             const screenY = coin.y - this.camera.y;
             return screenY >= -50 && screenY <= this.canvas.height + 50;
         });
-        
+
         for (let coin of visibleCoins) {
             // Анимация парения (вертикальное движение) - замедленная
             const floatOffset = Math.sin(coin.animation * 0.8) * 3;
             const currentY = coin.y + floatOffset;
-            
+
             this.ctx.save();
-            this.ctx.translate(coin.x + coin.width/2, currentY + coin.height/2);
-            
+            this.ctx.translate(coin.x + coin.width / 2, currentY + coin.height / 2);
+
             // Отключаем сглаживание для четкого pixel art
             this.ctx.imageSmoothingEnabled = false;
-            
+
             // Простой золотой круг (как в иконке) - фиксированный радиус
             this.ctx.fillStyle = '#FFD700'; // Яркий золотой цвет
             this.ctx.beginPath();
             this.ctx.arc(0, 0, 10, 0, Math.PI * 2); // Фиксированный радиус 10
             this.ctx.fill();
-            
+
             // Белая буква "Р" в центре
             this.ctx.fillStyle = 'white';
             this.ctx.font = 'bold 12px Arial';
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText('Р', 0, 0);
-            
+
             this.ctx.restore();
         }
     }
-    
+
     drawJetpacks() {
         const visibleJetpacks = this.jetpacks.filter(jetpack => {
             if (jetpack.collected) return false;
             const screenY = jetpack.y - this.camera.y;
             return screenY >= -50 && screenY <= this.canvas.height + 50;
         });
-        
+
         for (let jetpack of visibleJetpacks) {
             // Анимация парения (вертикальное движение)
             const floatOffset = Math.sin(jetpack.animation * 0.6) * 2;
             const currentY = jetpack.y + floatOffset;
-            
+
             this.ctx.save();
-            this.ctx.translate(jetpack.x + jetpack.size/2, currentY + jetpack.size/2);
-            
+            this.ctx.translate(jetpack.x + jetpack.size / 2, currentY + jetpack.size / 2);
+
             // Рисуем реактивный ранец
             this.drawJetpackIcon(0, 0, jetpack.size);
-            
+
             this.ctx.restore();
         }
     }
-    
+
     drawJetpackIcon(x, y, size) {
         const halfSize = size / 2;
-        
+
         // Основной корпус ранца (серый)
         this.ctx.fillStyle = '#666666';
         this.ctx.fillRect(x - halfSize, y - halfSize, size, size);
-        
+
         // Рамка ранца
         this.ctx.strokeStyle = '#333333';
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(x - halfSize, y - halfSize, size, size);
-        
+
         // Детали ранца
         this.ctx.fillStyle = '#888888';
         this.ctx.fillRect(x - halfSize + 2, y - halfSize + 2, size - 4, 4);
         this.ctx.fillRect(x - halfSize + 2, y + halfSize - 6, size - 4, 4);
-        
+
         // Огненные струи (анимированные)
         const flameHeight = 8 + Math.sin(this.frameCount * 0.3) * 3;
         this.ctx.fillStyle = '#FF4500';
         this.ctx.fillRect(x - 2, y + halfSize, 4, flameHeight);
         this.ctx.fillStyle = '#FFD700';
         this.ctx.fillRect(x - 1, y + halfSize, 2, flameHeight * 0.7);
-        
+
         // Символ реактивного ранца
         this.ctx.fillStyle = 'white';
         this.ctx.font = `bold ${size * 0.4}px Arial`;
@@ -1958,36 +1958,36 @@ class BabyVillagerGame {
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText('🚀', x, y);
     }
-    
+
     drawPlayer() {
         const screenY = this.player.y - this.camera.y;
         if (screenY < -50 || screenY > this.canvas.height + 50) return;
-        
-        const x = this.player.x + this.player.width/2;
-        const y = this.player.y + this.player.height/2;
+
+        const x = this.player.x + this.player.width / 2;
+        const y = this.player.y + this.player.height / 2;
         const animation = Date.now() * 0.01;
-        
+
         // Анимации состояний
         const stateAnimation = this.getStateAnimation();
-        
+
         // Без базовых анимаций в игре
         const blinkAnimation = 1; // Глаза всегда открыты
         const bounceAnimation = 0; // Без покачивания
         const armSwing = 0; // Без размахивания руками
         const eyeGlow = 1.0; // Без пульсации глаз
-        
+
         // Ребенок-Житель из Майнкрафта с гипертрофированными анимациями состояний
         // Применяем масштабирование
         this.ctx.save();
         this.ctx.translate(x, y);
         this.ctx.scale(stateAnimation.scale, stateAnimation.scale);
         this.ctx.translate(-x, -y);
-        
+
         // Цвет головы в зависимости от скина
         let headColor = '#F5DEB3'; // По умолчанию
         let bodyColor = '#8B4513'; // По умолчанию
-        
-        switch(this.shop.currentSkin) {
+
+        switch (this.shop.currentSkin) {
             case 'golden':
                 headColor = '#FFD700';
                 bodyColor = '#FFA500';
@@ -2006,7 +2006,7 @@ class BabyVillagerGame {
                 bodyColor = '#4682B4';
                 break;
         }
-        
+
         // Голова (квадратная, как в Майнкрафте) с анимацией состояния
         if (this.shop.currentSkin === 'rainbow') {
             // Радужный градиент для головы
@@ -2022,34 +2022,34 @@ class BabyVillagerGame {
             this.ctx.fillStyle = headColor;
         }
         this.ctx.fillRect(x - 12, y - 30 + stateAnimation.headOffset, 24, 24);
-        
+
         // Обводка головы
         this.ctx.strokeStyle = '#D2B48C'; // Темно-бежевый
         this.ctx.lineWidth = 2;
         this.ctx.strokeRect(x - 12, y - 30 + stateAnimation.headOffset, 24, 24);
-        
+
         // Глаза (с анимацией свечения)
         // Свечение глаз
         this.ctx.fillStyle = `rgba(255, 255, 0, ${stateAnimation.eyeGlow * 0.3})`;
         this.ctx.fillRect(x - 10, y - 27 + stateAnimation.headOffset, 8, 6);
         this.ctx.fillRect(x + 2, y - 27 + stateAnimation.headOffset, 8, 6);
-        
+
         // Глаза (черные квадраты)
         this.ctx.fillStyle = '#000000';
         this.ctx.fillRect(x - 8, y - 25 + stateAnimation.headOffset, 4, 4);
         this.ctx.fillRect(x + 4, y - 25 + stateAnimation.headOffset, 4, 4);
-        
+
         // Нос (большой квадратный нос жителя)
         this.ctx.fillStyle = '#D2B48C';
         this.ctx.fillRect(x - 2, y - 20 + stateAnimation.headOffset, 4, 4);
-        
+
         // Рот (обычная улыбка)
         this.ctx.strokeStyle = '#000000';
         this.ctx.lineWidth = 1;
         this.ctx.beginPath();
         this.ctx.arc(x, y - 15 + stateAnimation.headOffset, 6, 0, Math.PI);
         this.ctx.stroke();
-        
+
         // Тело (мантия) с цветом в зависимости от скина
         if (this.shop.currentSkin === 'rainbow') {
             // Радужный градиент для тела
@@ -2065,22 +2065,22 @@ class BabyVillagerGame {
             this.ctx.fillStyle = bodyColor;
         }
         this.ctx.fillRect(x - 15, y - 10, 30, 20);
-        
+
         // Детали мантии
         this.ctx.fillStyle = '#A0522D'; // Темно-коричневый
         this.ctx.fillRect(x - 15, y - 10, 30, 3);
         this.ctx.fillRect(x - 15, y + 7, 30, 3);
-        
+
         // Руки (с анимацией состояния)
         this.ctx.fillStyle = '#F5DEB3'; // Цвет кожи
         this.ctx.fillRect(x - 18, y - 5 + stateAnimation.armOffset, 6, 12);
         this.ctx.fillRect(x + 12, y - 5 - stateAnimation.armOffset, 6, 12);
-        
+
         // Ноги (с анимацией состояния)
         this.ctx.fillStyle = bodyColor;
         this.ctx.fillRect(x - 8, y + 10 + stateAnimation.legOffset, 6, 8);
         this.ctx.fillRect(x + 2, y + 10 - stateAnimation.legOffset, 6, 8);
-        
+
         // Волнообразный низ (призрачный эффект)
         for (let i = 0; i < 6; i++) {
             const waveX = x - 15 + i * 5;
@@ -2088,48 +2088,48 @@ class BabyVillagerGame {
             this.ctx.fillStyle = bodyColor;
             this.ctx.fillRect(waveX, waveY, 5, 2);
         }
-        
+
         // Тень
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
         this.ctx.fillRect(this.player.x + 2, this.player.y + this.player.height, this.player.width - 4, 5);
-        
+
         // Эффект реактивного ранца на игроке
         if (this.playerJetpackActive) {
             this.drawPlayerJetpackEffect(x, y);
         }
-        
+
         // Восстанавливаем контекст
         this.ctx.restore();
     }
-    
+
     drawPlayerJetpackEffect(x, y) {
         // Огненные струи под игроком
         const flameHeight = 15 + Math.sin(this.frameCount * 0.4) * 5;
         const flameWidth = 8;
-        
+
         // Основное пламя
         this.ctx.fillStyle = '#FF4500';
-        this.ctx.fillRect(x - flameWidth/2, y + 15, flameWidth, flameHeight);
-        
+        this.ctx.fillRect(x - flameWidth / 2, y + 15, flameWidth, flameHeight);
+
         // Внутреннее пламя (желтое)
         this.ctx.fillStyle = '#FFD700';
-        this.ctx.fillRect(x - flameWidth/2 + 1, y + 15, flameWidth - 2, flameHeight * 0.7);
-        
+        this.ctx.fillRect(x - flameWidth / 2 + 1, y + 15, flameWidth - 2, flameHeight * 0.7);
+
         // Внешнее пламя (белое)
         this.ctx.fillStyle = '#FFFFFF';
-        this.ctx.fillRect(x - flameWidth/2 + 2, y + 15, flameWidth - 4, flameHeight * 0.4);
-        
+        this.ctx.fillRect(x - flameWidth / 2 + 2, y + 15, flameWidth - 4, flameHeight * 0.4);
+
         // Искры
         for (let i = 0; i < 5; i++) {
-            const sparkX = x - flameWidth/2 + Math.random() * flameWidth;
+            const sparkX = x - flameWidth / 2 + Math.random() * flameWidth;
             const sparkY = y + 15 + flameHeight + Math.random() * 10;
             const sparkSize = 1 + Math.random() * 2;
-            
+
             this.ctx.fillStyle = '#FFD700';
             this.ctx.fillRect(sparkX, sparkY, sparkSize, sparkSize);
         }
     }
-    
+
     updateAnimationState() {
         // Определяем состояние анимации на основе скорости
         if (this.player.velocityY < -15) {
@@ -2148,14 +2148,14 @@ class BabyVillagerGame {
             // Покой (на платформе) - без анимации
             this.animationState = 'idle';
         }
-        
+
         this.animationTimer += 0.016; // Примерно 60 FPS
         this.lastVelocityY = this.player.velocityY;
     }
-    
+
     getStateAnimation() {
         const timer = this.animationTimer;
-        
+
         switch (this.animationState) {
             case 'jumping':
                 return {
@@ -2195,7 +2195,7 @@ class BabyVillagerGame {
                 };
         }
     }
-    
+
     getMainScreenStateAnimation(state, progress) {
         // Только анимация ожидания (idle) на главном экране
         return {
@@ -2206,40 +2206,40 @@ class BabyVillagerGame {
             scale: 1.0
         };
     }
-    
+
     drawMainScreenCharacter() {
         const canvas = document.getElementById('characterCanvas');
         if (!canvas) return;
-        
+
         const ctx = canvas.getContext('2d');
         const x = canvas.width / 2;
         const y = canvas.height / 2;
         const animation = Date.now() * 0.01;
-        
+
         // Очищаем canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         // Только анимация ожидания на главном экране
         const stateAnimation = this.getMainScreenStateAnimation('idle', 0);
-        
+
         // Только анимация покоя на главном экране
         const blinkAnimation = 1; // Глаза всегда открыты
         const bounceAnimation = Math.sin(animation * 0.8) * 1.2; // Покачивание
         const armSwing = Math.sin(animation * 1.5) * 1.5; // Размахивание руками
         const eyeGlow = Math.sin(animation * 0.7) * 0.15 + 0.85; // Свечение глаз
-        
+
         // Ребенок-Житель из Майнкрафта с анимациями состояний
         // Применяем масштабирование
         ctx.save();
         ctx.translate(x, y);
         ctx.scale(stateAnimation.scale, stateAnimation.scale);
         ctx.translate(-x, -y);
-        
+
         // Цвет головы в зависимости от скина
         let headColor = '#F5DEB3'; // По умолчанию
         let bodyColor = '#8B4513'; // По умолчанию
-        
-        switch(this.shop.currentSkin) {
+
+        switch (this.shop.currentSkin) {
             case 'golden':
                 headColor = '#FFD700';
                 bodyColor = '#FFA500';
@@ -2258,7 +2258,7 @@ class BabyVillagerGame {
                 bodyColor = '#4682B4';
                 break;
         }
-        
+
         // Голова (квадратная, как в Майнкрафте) с покачиванием
         if (this.shop.currentSkin === 'rainbow') {
             // Радужный градиент для головы
@@ -2274,27 +2274,27 @@ class BabyVillagerGame {
             ctx.fillStyle = headColor;
         }
         ctx.fillRect(x - 12, y - 30 + bounceAnimation, 24, 24);
-        
+
         // Обводка головы
         ctx.strokeStyle = '#D2B48C'; // Темно-бежевый
         ctx.lineWidth = 2;
         ctx.strokeRect(x - 12, y - 30 + bounceAnimation, 24, 24);
-        
+
         // Глаза (светятся)
         // Свечение глаз
         ctx.fillStyle = `rgba(255, 255, 0, ${eyeGlow * 0.3})`;
         ctx.fillRect(x - 10, y - 27 + bounceAnimation, 8, 6);
         ctx.fillRect(x + 2, y - 27 + bounceAnimation, 8, 6);
-        
+
         // Глаза (большие черные квадраты)
         ctx.fillStyle = '#000000';
         ctx.fillRect(x - 8, y - 25 + bounceAnimation, 4, 4);
         ctx.fillRect(x + 4, y - 25 + bounceAnimation, 4, 4);
-        
+
         // Нос (большой квадратный нос жителя)
         ctx.fillStyle = '#D2B48C';
         ctx.fillRect(x - 2, y - 20 + bounceAnimation, 4, 4);
-        
+
         // Рот (анимированная улыбка)
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 1;
@@ -2302,7 +2302,7 @@ class BabyVillagerGame {
         const mouthRadius = 6 + Math.sin(animation * 1.0) * 0.6; // Пульсирующий рот
         ctx.arc(x, y - 15 + bounceAnimation, mouthRadius, 0, Math.PI);
         ctx.stroke();
-        
+
         // Тело (мантия) с покачиванием и цветом в зависимости от скина
         if (this.shop.currentSkin === 'rainbow') {
             // Радужный градиент для тела
@@ -2318,24 +2318,24 @@ class BabyVillagerGame {
             ctx.fillStyle = bodyColor;
         }
         ctx.fillRect(x - 15, y - 10 + bounceAnimation, 30, 20);
-        
+
         // Детали мантии (анимированные полосы)
         ctx.fillStyle = '#A0522D'; // Темно-коричневый
         const stripeOffset = Math.sin(animation * 0.5) * 0.2;
         ctx.fillRect(x - 15, y - 10 + bounceAnimation + stripeOffset, 30, 3);
         ctx.fillRect(x - 15, y + 7 + bounceAnimation - stripeOffset, 30, 3);
-        
+
         // Руки (анимированные - размахивают)
         ctx.fillStyle = '#F5DEB3'; // Цвет кожи
         ctx.fillRect(x - 18, y - 5 + bounceAnimation + armSwing, 6, 12);
         ctx.fillRect(x + 12, y - 5 + bounceAnimation - armSwing, 6, 12);
-        
+
         // Ноги (анимированные - бегут)
         ctx.fillStyle = bodyColor;
         const legOffset = Math.sin(animation * 2) * 0.6;
         ctx.fillRect(x - 8, y + 10 + bounceAnimation + legOffset, 6, 8);
         ctx.fillRect(x + 2, y + 10 + bounceAnimation - legOffset, 6, 8);
-        
+
         // Волнообразный низ (призрачный эффект) с анимацией
         for (let i = 0; i < 6; i++) {
             const waveX = x - 15 + i * 5;
@@ -2343,7 +2343,7 @@ class BabyVillagerGame {
             ctx.fillStyle = bodyColor;
             ctx.fillRect(waveX, waveY, 5, 2);
         }
-        
+
         // Специальные эффекты для скинов
         if (this.shop.currentSkin === 'fire') {
             // Огненные эффекты
@@ -2360,41 +2360,41 @@ class BabyVillagerGame {
             ctx.fillRect(x - 8, y + 8 + bounceAnimation, 2, 2);
             ctx.fillRect(x + 6, y + 10 + bounceAnimation, 2, 2);
         }
-        
+
         // Восстанавливаем контекст
         ctx.restore();
     }
-    
+
     drawGhost() {
         if (!this.ghost.visible) return;
-        
+
         const screenY = this.ghost.y - this.camera.y;
         if (screenY < -50 || screenY > this.canvas.height + 50) return;
-        
+
         // Анимация покачивания
         const sway = Math.sin(this.ghost.animation) * 3;
         const x = this.canvas.width / 2 + sway;
-        
+
         // Прозрачность призрака
         this.ctx.globalAlpha = 0.6;
-        
+
         // Тело призрака (полупрозрачное)
         this.ctx.fillStyle = '#E0E0E0';
         this.ctx.fillRect(x - 15, this.ghost.y - 20, 30, 20);
-        
+
         // Голова призрака
         this.ctx.fillStyle = '#F0F0F0';
         this.ctx.fillRect(x - 10, this.ghost.y - 25, 20, 20);
-        
+
         // Глаза призрака
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(x - 6, this.ghost.y - 18, 3, 3);
         this.ctx.fillRect(x + 3, this.ghost.y - 18, 3, 3);
-        
+
         // Рот призрака
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(x - 3, this.ghost.y - 12, 6, 2);
-        
+
         // Волнообразный низ призрака
         this.ctx.fillStyle = '#E0E0E0';
         for (let i = 0; i < 6; i++) {
@@ -2402,35 +2402,35 @@ class BabyVillagerGame {
             const waveY = this.ghost.y + Math.sin(this.ghost.animation * 2 + i) * 2;
             this.ctx.fillRect(waveX, waveY, 5, 5);
         }
-        
+
         // Сброс прозрачности
         this.ctx.globalAlpha = 1.0;
-        
+
         // Текст "Вы"
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         this.ctx.font = '12px monospace';
         this.ctx.textAlign = 'center';
         this.ctx.fillText('Вы', x, this.ghost.y + 15);
     }
-    
+
     drawFakeGhosts() {
         for (let fakeGhost of this.fakeGhosts) {
             const screenY = fakeGhost.y - this.camera.y;
             if (screenY < -50 || screenY > this.canvas.height + 50) continue;
-            
+
             // Анимация покачивания
             const sway = Math.sin(fakeGhost.animation) * 2;
             const x = this.canvas.width / 2 + sway + (Math.sin(fakeGhost.animation * 0.5) * 20);
-            
+
             // Прозрачность фейкового призрака
             this.ctx.globalAlpha = 0.4;
-            
+
             // Рисуем призрак в зависимости от стиля
             this.drawFakeGhost(fakeGhost, x, fakeGhost.y);
-            
+
             // Сброс прозрачности
             this.ctx.globalAlpha = 1.0;
-            
+
             // Текст с именем и счетом
             this.ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
             this.ctx.font = '10px monospace';
@@ -2438,10 +2438,10 @@ class BabyVillagerGame {
             this.ctx.fillText(`${fakeGhost.name} (${fakeGhost.score})`, x, fakeGhost.y + 20);
         }
     }
-    
+
     drawFakeGhost(fakeGhost, x, y) {
         const baseColor = fakeGhost.color;
-        
+
         switch (fakeGhost.style) {
             case 0: // Обычный призрак
                 this.drawStandardGhost(x, y, baseColor, fakeGhost.animation);
@@ -2454,21 +2454,21 @@ class BabyVillagerGame {
                 break;
         }
     }
-    
+
     drawStandardGhost(x, y, color, animation) {
         // Тело призрака
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x - 12, y - 15, 24, 15);
-        
+
         // Голова призрака
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x - 8, y - 20, 16, 16);
-        
+
         // Глаза
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(x - 5, y - 15, 2, 2);
         this.ctx.fillRect(x + 3, y - 15, 2, 2);
-        
+
         // Волнообразный низ
         for (let i = 0; i < 4; i++) {
             const waveX = x - 12 + i * 6;
@@ -2476,26 +2476,26 @@ class BabyVillagerGame {
             this.ctx.fillRect(waveX, waveY, 6, 3);
         }
     }
-    
+
     drawHatGhost(x, y, color, animation) {
         // Шляпа
         this.ctx.fillStyle = '#8B4513';
         this.ctx.fillRect(x - 6, y - 25, 12, 4);
         this.ctx.fillRect(x - 4, y - 28, 8, 4);
-        
+
         // Тело призрака
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x - 12, y - 15, 24, 15);
-        
+
         // Голова призрака
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x - 8, y - 20, 16, 16);
-        
+
         // Глаза
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(x - 5, y - 15, 2, 2);
         this.ctx.fillRect(x + 3, y - 15, 2, 2);
-        
+
         // Волнообразный низ
         for (let i = 0; i < 4; i++) {
             const waveX = x - 12 + i * 6;
@@ -2503,26 +2503,26 @@ class BabyVillagerGame {
             this.ctx.fillRect(waveX, waveY, 6, 3);
         }
     }
-    
+
     drawWingedGhost(x, y, color, animation) {
         // Крылья
         this.ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         this.ctx.fillRect(x - 18, y - 12, 6, 8);
         this.ctx.fillRect(x + 12, y - 12, 6, 8);
-        
+
         // Тело призрака
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x - 12, y - 15, 24, 15);
-        
+
         // Голова призрака
         this.ctx.fillStyle = color;
         this.ctx.fillRect(x - 8, y - 20, 16, 16);
-        
+
         // Глаза
         this.ctx.fillStyle = '#000';
         this.ctx.fillRect(x - 5, y - 15, 2, 2);
         this.ctx.fillRect(x + 3, y - 15, 2, 2);
-        
+
         // Волнообразный низ
         for (let i = 0; i < 4; i++) {
             const waveX = x - 12 + i * 6;
@@ -2530,7 +2530,7 @@ class BabyVillagerGame {
             this.ctx.fillRect(waveX, waveY, 6, 3);
         }
     }
-    
+
     gameLoop() {
         this.frameCount++;
         this.updatePlayer();
@@ -2542,7 +2542,7 @@ class BabyVillagerGame {
         this.updateParallax();
         this.render();
         this.drawMainScreenCharacter(); // Обновляем персонажа на главном экране
-        
+
         requestAnimationFrame(() => this.gameLoop());
     }
 
@@ -2558,7 +2558,7 @@ if (typeof YaGames !== 'undefined') {
     YaGames.init().then(ysdk => {
         window.ysdk = ysdk;
         console.log('Яндекс.Игры SDK загружен');
-        
+
         // Реклама теперь показывается только при продолжении игры
     });
 }

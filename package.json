@@ -4,7 +4,7 @@
   "description": "Платформер в стиле Doodle Jump с малышом-жителем из Minecraft",
   "main": "index.html",
   "scripts": {
-    "start": "npx http-server -p 8080 -c-1",
+    "start": "npx http-server -a 0.0.0.0 -p 5000 -c-1",
     "build": "echo 'Игра готова к публикации!'",
     "test": "echo 'Тестирование завершено'"
   },
