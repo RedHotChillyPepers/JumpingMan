@@ -1,0 +1,27 @@
+{
+  "name": "baby-villager-jumping",
+  "version": "1.0.0",
+  "description": "Платформер в стиле Doodle Jump с малышом-жителем из Minecraft",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -c-1",
+    "build": "echo 'Игра готова к публикации!'",
+    "test": "echo 'Тестирование завершено'"
+  },
+  "keywords": [
+    "game",
+    "platformer",
+    "doodle-jump",
+    "minecraft",
+    "yandex-games",
+    "baby-villager"
+  ],
+  "author": "Baby Villager Jumping Team",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

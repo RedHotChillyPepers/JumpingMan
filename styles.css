@@ -1,0 +1,840 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Courier New', monospace;
+    background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    max-width: 500px;
+    max-height: 800px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* На мобильных устройствах убираем ограничения размера */
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+        margin: 0;
+        justify-content: flex-start;
+        align-items: flex-start;
+    }
+    
+    #gameContainer {
+        max-width: none;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+        width: 100vw;
+        height: 100vh;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    #gameContainer {
+        width: 100vw;
+        height: 100vh;
+        min-width: 100vw;
+        min-height: 100vh;
+    }
+}
+
+.screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #87CEEB 0%, #98FB98 100%);
+}
+
+.hidden {
+    display: none !important;
+}
+
+h1 {
+    background: linear-gradient(135deg, #FF4444 0%, #FF6B35 100%);
+    color: white;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font-weight: bold;
+    display: inline-block;
+}
+
+h2 {
+    color: #FF6B35;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+#gameOverScreen h2 {
+    background: linear-gradient(135deg, #FF4444 0%, #FF6B35 100%);
+    color: white;
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    margin: 20px auto;
+    max-width: fit-content;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    font-weight: bold;
+}
+
+/* Стили для иконок монеток */
+#coinIcon, #mainCoinIcon, #shopCoinIcon {
+    width: 24px;
+    height: 24px;
+    image-rendering: auto;
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.character-preview {
+    margin: 20px 0 30px 0;
+    animation: bounce 2s infinite;
+}
+
+/* Стили для главного экрана */
+#startScreen {
+    background: linear-gradient(135deg, #87CEEB 0%, #98FB98 50%, #90EE90 100%);
+}
+
+/* Контейнер для кнопок на главном экране */
+#startScreen .btn {
+    display: block;
+    margin: 15px auto;
+    width: 220px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    font-weight: bold;
+}
+
+#characterCanvas {
+    width: 80px;
+    height: 100px;
+    margin: 0 auto;
+    display: block;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.stats-container {
+    display: flex;
+    gap: 30px;
+    margin: 10px 0 30px 0;
+    justify-content: center;
+    align-items: center;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px 18px;
+    border-radius: 15px;
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.stat-label {
+    color: white;
+    font-size: 1.1em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.stat-value {
+    color: #FFD700;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+#mainCoinIcon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.shop-stats {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 20px 0;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 15px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.shop-coin-count {
+    color: #FFD700;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+#shopCoinIcon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+.shop-items {
+    margin: 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-right: 10px;
+}
+
+.shop-item {
+    width: 100%;
+    flex-shrink: 0;
+}
+
+.shop-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px 20px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    width: 100%;
+    text-align: left;
+}
+
+.shop-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.shop-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.shop-icon {
+    font-size: 1.5em;
+    min-width: 30px;
+}
+
+.shop-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.shop-item-name {
+    color: white;
+    font-size: 1.1em;
+    font-weight: bold;
+}
+
+.shop-item-desc {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9em;
+}
+
+.shop-price {
+    color: #FFD700;
+    font-weight: bold;
+    font-size: 1.2em;
+    min-width: 40px;
+    text-align: right;
+}
+
+
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-10px);
+    }
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+.btn {
+    background: linear-gradient(135deg, #32CD32 0%, #228B22 100%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    padding: 15px 30px;
+    font-size: 1.2em;
+    border-radius: 25px;
+    cursor: pointer;
+    margin: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.btn:hover {
+    background: linear-gradient(135deg, #228B22 0%, #1E7B1E 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+
+#gameScreen {
+    background: linear-gradient(180deg, #87CEEB 0%, #98FB98 50%, #90EE90 100%);
+    justify-content: flex-start;
+    padding: 0;
+}
+
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 10;
+    color: white;
+    font-size: 0.9em;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 15px 18px;
+    border-radius: 20px;
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+    min-height: 65px;
+    gap: 8px;
+}
+
+#coins {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #FFD700;
+    font-size: 1em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    background: rgba(255, 215, 0, 0.15);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    min-width: 80px;
+    min-height: 45px;
+}
+
+#doubleJumps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #00FF00;
+    font-size: 1em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    background: rgba(0, 255, 0, 0.15);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 2px solid rgba(0, 255, 0, 0.4);
+    min-width: 80px;
+    min-height: 45px;
+}
+
+#doubleJumpIcon {
+    font-size: 18px;
+}
+
+#doubleJumpCount {
+    color: #00FF00;
+    font-weight: bold;
+    font-size: 1em;
+}
+
+#score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    color: white;
+    font-size: 0.9em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    background: rgba(255, 255, 255, 0.15);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    min-width: 80px;
+    min-height: 45px;
+    margin-right: 0;
+}
+
+/* Стили для рекорда на экране смерти */
+#gameOverHighScore {
+    color: #FFD700;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+}
+
+/* Стили для скинов */
+.shop-section {
+    margin-top: 20px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    flex-shrink: 0;
+}
+
+.shop-section h3 {
+    color: #FFD700;
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.skins-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+    flex-shrink: 0;
+}
+
+.skin-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.skin-item:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.skin-item.owned {
+    border-color: rgba(0, 255, 0, 0.5);
+    background: rgba(0, 255, 0, 0.1);
+}
+
+.skin-item.selected {
+    border-color: #FFD700;
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.skin-preview {
+    width: 48px;
+    height: 48px;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    margin-bottom: 8px;
+}
+
+.skin-name {
+    color: white;
+    font-size: 0.9em;
+    font-weight: bold;
+    margin-bottom: 4px;
+    text-align: center;
+}
+
+.skin-price {
+    color: #FFD700;
+    font-size: 0.8em;
+    font-weight: bold;
+}
+
+.skin-item.owned .skin-price {
+    color: #00FF00;
+}
+
+.skin-item.selected .skin-price {
+    color: #FFD700;
+}
+
+/* Стили для прокрутки в магазине */
+.shop-items::-webkit-scrollbar {
+    width: 8px;
+}
+
+.shop-items::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.shop-items::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.shop-items::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Убеждаемся, что заголовок и кнопка "Назад" всегда видны */
+#shopScreen {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+#shopScreen h2 {
+    flex-shrink: 0;
+    margin-bottom: 10px;
+    font-size: 2.5em;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+    color: #FF8C00;
+    text-align: center;
+    font-weight: bold;
+}
+
+#shopScreen .shop-stats {
+    flex-shrink: 0;
+}
+
+#shopScreen .shop-items {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 80px; /* Отступ для фиксированной кнопки "Назад" */
+}
+
+#shopScreen #backFromShopBtn {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    margin: 0;
+}
+
+#coinIcon {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    width: 24px;
+    height: 24px;
+}
+
+#coinCount {
+    color: #FFD700;
+    font-size: 1em;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.sound-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    flex-shrink: 0;
+}
+
+.sound-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.sound-btn:active {
+    transform: scale(0.95);
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    cursor: pointer;
+}
+
+#gameOverScreen {
+    background: linear-gradient(135deg, #FF4444 0%, #FF6B35 50%, #FF8E53 100%);
+}
+
+#finalScore {
+    font-size: 1.8em;
+    color: white;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    font-weight: bold;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px 25px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: inline-block;
+}
+
+#newRecord {
+    font-size: 1.3em;
+    color: #FFD700;
+    margin: 10px 0;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    animation: pulse 1s infinite;
+}
+
+.game-over-buttons {
+    display: flex;
+    gap: 15px;
+    margin: 20px 0;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.continue-btn {
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    color: white;
+    border: none;
+    padding: 15px 25px;
+    font-size: 1.2em;
+    border-radius: 25px;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.continue-btn:hover {
+    background: linear-gradient(135deg, #E55A2B 0%, #E8821A 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+}
+
+.continue-btn:active {
+    transform: translateY(0);
+}
+
+.ad-icon {
+    font-size: 1.3em;
+    animation: pulse 2s infinite;
+}
+
+.secondary-btn {
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    margin-top: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.secondary-btn:hover {
+    background: linear-gradient(135deg, #5BA0F2 0%, #468BCF 100%);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+/* Виртуальные кнопки управления для мобильных */
+.mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 20px;
+    z-index: 20;
+    pointer-events: none;
+}
+
+.control-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    pointer-events: auto;
+    backdrop-filter: blur(10px);
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.control-btn:active {
+    transform: scale(0.9);
+    background: rgba(0, 0, 0, 0.6);
+    border-color: rgba(255, 255, 255, 1);
+}
+
+.control-btn:hover {
+    background: rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 1);
+}
+
+.jump-btn {
+    background: rgba(0, 150, 0, 0.3);
+    border-color: rgba(0, 255, 0, 0.8);
+    font-size: 20px;
+    position: absolute;
+    bottom: 80px;
+    right: 20px;
+}
+
+.jump-btn:active {
+    background: rgba(0, 150, 0, 0.6);
+    border-color: rgba(0, 255, 0, 1);
+}
+
+.jump-btn:hover {
+    background: rgba(0, 150, 0, 0.5);
+    border-color: rgba(0, 255, 0, 1);
+}
+
+/* Мобильная версия - специальное расположение кнопок */
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    
+    .left-btn {
+        order: 1;
+    }
+    
+    .right-btn {
+        order: 3;
+    }
+    
+    .jump-btn {
+        order: 2;
+        position: absolute;
+        bottom: 80px;
+        right: 20px;
+    }
+}
+
+/* Скрываем кнопки на десктопе */
+@media (min-width: 769px) {
+    .mobile-controls {
+        display: none;
+    }
+}
+
+/* Адаптивность для мобильных устройств */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2em;
+    }
+    
+    h2 {
+        font-size: 1.5em;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        font-size: 1em;
+    }
+    
+    
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .mobile-controls {
+        bottom: 15px;
+        padding: 0 15px;
+    }
+}

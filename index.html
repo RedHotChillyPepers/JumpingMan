@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Джампер Мэн - Платформер</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="startScreen" class="screen">
+            <h1>Джампер Мэн</h1>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-label">Рекорд:</span>
+                    <span id="mainHighScore" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <canvas id="mainCoinIcon" width="48" height="48"></canvas>
+                    <span id="mainCoinCount" class="stat-value">0</span>
+                </div>
+            </div>
+            <div class="character-preview">
+                <canvas id="characterCanvas" width="80" height="100"></canvas>
+            </div>
+            <button id="startBtn" class="btn">Начать игру</button>
+            <button id="shopBtn" class="btn secondary">Магазин</button>
+        </div>
+
+        <div id="shopScreen" class="screen hidden">
+            <h2>Магазин</h2>
+            <div class="shop-stats">
+                <canvas id="shopCoinIcon" width="48" height="48"></canvas>
+                <span id="shopCoinCount" class="shop-coin-count">0</span>
+            </div>
+            <div class="shop-items">
+                <div class="shop-item">
+                    <button id="doubleJumpBtn" class="shop-btn" disabled>
+                        <span class="shop-icon">🦘</span>
+                        <div class="shop-item-info">
+                            <span class="shop-item-name">Двойной прыжок</span>
+                            <span class="shop-item-desc">Позволяет прыгнуть еще раз в воздухе</span>
+                        </div>
+                        <span class="shop-price">50</span>
+                    </button>
+                </div>
+                
+                <div class="shop-section">
+                    <h3>Скины персонажа</h3>
+                    <div class="skins-grid">
+                        <div class="skin-item" data-skin="default">
+                            <canvas class="skin-preview" width="64" height="64"></canvas>
+                            <span class="skin-name">Классический</span>
+                            <span class="skin-price">Бесплатно</span>
+                        </div>
+                        <div class="skin-item" data-skin="golden">
+                            <canvas class="skin-preview" width="64" height="64"></canvas>
+                            <span class="skin-name">Золотой</span>
+                            <span class="skin-price">100</span>
+                        </div>
+                        <div class="skin-item" data-skin="rainbow">
+                            <canvas class="skin-preview" width="64" height="64"></canvas>
+                            <span class="skin-name">Радужный</span>
+                            <span class="skin-price">150</span>
+                        </div>
+                        <div class="skin-item" data-skin="fire">
+                            <canvas class="skin-preview" width="64" height="64"></canvas>
+                            <span class="skin-name">Огненный</span>
+                            <span class="skin-price">200</span>
+                        </div>
+                        <div class="skin-item" data-skin="ice">
+                            <canvas class="skin-preview" width="64" height="64"></canvas>
+                            <span class="skin-name">Ледяной</span>
+                            <span class="skin-price">250</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="backFromShopBtn" class="btn secondary">Назад</button>
+        </div>
+
+        <div id="gameScreen" class="screen hidden">
+            <div id="ui">
+                <div id="score">0</div>
+                <div id="coins">
+                    <canvas id="coinIcon" width="64" height="64"></canvas>
+                    <span id="coinCount">0</span>
+                </div>
+                <div id="doubleJumps">
+                    <span id="doubleJumpIcon">🦘</span>
+                    <span id="doubleJumpCount">0</span>
+                </div>
+                <button id="soundBtn" class="sound-btn">🔊</button>
+            </div>
+            <canvas id="gameCanvas" width="400" height="600"></canvas>
+            
+            <!-- Виртуальные кнопки управления для мобильных -->
+            <div id="mobileControls" class="mobile-controls">
+                <button id="leftBtn" class="control-btn left-btn">←</button>
+                <button id="rightBtn" class="control-btn right-btn">→</button>
+                <button id="jumpBtn" class="control-btn jump-btn">🦘</button>
+            </div>
+        </div>
+
+        <div id="gameOverScreen" class="screen hidden">
+            <h2>Игра окончена!</h2>
+            <div id="finalScore">Ваш счет: 0</div>
+            <div id="newRecord" class="hidden">🎉 Новый рекорд! 🎉</div>
+            <div class="game-over-buttons">
+                <button id="continueBtn" class="btn continue-btn">
+                    <span class="ad-icon">📺</span>
+                    Продолжить
+                </button>
+                <button id="restartBtn" class="btn">Играть снова</button>
+            </div>
+            <button id="menuBtn" class="btn secondary-btn">Главное меню</button>
+        </div>
+    </div>
+
+    <script src="https://yandex.ru/games/sdk/v2"></script>
+    <script src="game.js"></script>
+</body>
+</html>
