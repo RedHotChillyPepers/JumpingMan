@@ -718,7 +718,7 @@ h2 {
 /* Виртуальные кнопки управления для мобильных */
 .mobile-controls {
     position: absolute;
-    bottom: 20px;
+    bottom: 40px;
     left: 0;
     right: 0;
     display: flex;
@@ -730,13 +730,13 @@ h2 {
 }
 
 .control-btn {
-    width: 60px;
-    height: 60px;
+    width: 85px;
+    height: 85px;
     border-radius: 50%;
     border: 3px solid rgba(255, 255, 255, 0.8);
     background: rgba(0, 0, 0, 0.3);
     color: white;
-    font-size: 24px;
+    font-size: 32px;
     font-weight: bold;
     cursor: pointer;
     display: flex;
@@ -764,9 +764,9 @@ h2 {
 .jump-btn {
     background: rgba(0, 150, 0, 0.3);
     border-color: rgba(0, 255, 0, 0.8);
-    font-size: 20px;
+    font-size: 28px;
     position: absolute;
-    bottom: 80px;
+    bottom: 100px;
     right: 20px;
 }
 
@@ -799,7 +799,7 @@ h2 {
     .jump-btn {
         order: 2;
         position: absolute;
-        bottom: 80px;
+        bottom: 100px;
         right: 20px;
     }
 }
@@ -828,13 +828,13 @@ h2 {
     
     
     .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 75px;
+        height: 75px;
+        font-size: 28px;
     }
     
     .mobile-controls {
-        bottom: 15px;
+        bottom: 30px;
         padding: 0 15px;
     }
 }
