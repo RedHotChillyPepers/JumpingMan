@@ -9,6 +9,9 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <div id="fullscreenBackground">
+        <canvas id="fullscreenParallaxCanvas"></canvas>
+    </div>
     <div id="gameContainer">
         <div id="startScreen" class="screen">
             <h1>Джампер Мэн</h1>
@@ -31,7 +34,7 @@
         </div>
 
         <div id="shopScreen" class="screen hidden">
-            <h2>Магазин</h2>
+            <h1>Магазин</h1>
             <div class="shop-stats">
                 <canvas id="shopCoinIcon" width="48" height="48"></canvas>
                 <span id="shopCoinCount" class="shop-coin-count">0</span>
@@ -106,7 +109,7 @@
         </div>
 
         <div id="gameOverScreen" class="screen hidden">
-            <h2>Игра окончена!</h2>
+            <h1>Игра окончена!</h1>
             <div id="finalScore">Ваш счет: 0</div>
             <div id="newRecord" class="hidden">🎉 Новый рекорд! 🎉</div>
             <div class="game-over-buttons">

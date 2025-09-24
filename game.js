@@ -7,6 +7,13 @@ class BabyVillagerGame {
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = 400;
         this.canvas.height = 600;
+        
+        // Полноэкранный паралакс canvas
+        this.fullscreenCanvas = document.getElementById('fullscreenParallaxCanvas');
+        this.fullscreenCtx = this.fullscreenCanvas ? this.fullscreenCanvas.getContext('2d') : null;
+        if (this.fullscreenCanvas) {
+            this.setFullscreenCanvasSize();
+        }
 
         // Игровые состояния
         this.gameState = 'start'; // start, playing, gameOver
@@ -132,6 +139,14 @@ class BabyVillagerGame {
         this.deltaTime = 0;
 
         this.init();
+    }
+
+    setFullscreenCanvasSize() {
+        if (this.fullscreenCanvas) {
+            // Полноэкранный canvas всегда занимает весь экран
+            this.fullscreenCanvas.width = window.innerWidth;
+            this.fullscreenCanvas.height = window.innerHeight;
+        }
     }
 
     initYandexSDK() {
@@ -691,7 +706,6 @@ class BabyVillagerGame {
         this.updateSoundButton();
         this.drawMainScreenCharacter();
         this.updateMainScreenStats();
-        this.initParallax();
         this.gameLoop();
     }
 
@@ -810,6 +824,11 @@ class BabyVillagerGame {
         // Убираем касания и клики для прыжков
         this.canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
+        });
+
+        // Обработка изменения размера окна
+        window.addEventListener('resize', () => {
+            this.setFullscreenCanvasSize();
         });
     }
 
@@ -1738,18 +1757,6 @@ class BabyVillagerGame {
         }
     }
 
-    initParallax() {
-        // Облака рисуются динамически в drawClouds()
-
-        // Горы убраны
-
-        // Деревья убраны - они мешают видимости персонажа
-    }
-
-    // getMountainColor убрана - горы больше не используются
-
-    // getTreeColor убрана - деревья больше не используются
-
     updateParallax() {
         // Обновляем только во время игры
         if (this.gameState !== 'playing') return;
@@ -1775,21 +1782,25 @@ class BabyVillagerGame {
         }
     }
 
-    drawParallax() {
-        // Рисуем небо с градиентом (самый задний план)
-        this.drawSky();
+    drawFullscreenParallax() {
+        if (!this.fullscreenCtx) return;
+        
+        // Очищаем полноэкранный canvas
+        this.fullscreenCtx.clearRect(0, 0, this.fullscreenCanvas.width, this.fullscreenCanvas.height);
 
-        // Рисуем облака (передний план)
-        this.drawClouds();
+        // Рисуем небо на весь экран
+        this.drawFullscreenSky();
+
+        // Рисуем облака на весь экран
+        this.drawFullscreenClouds();
     }
 
-    drawSky() {
-        // Небо должно покрывать всю видимую область с учетом камеры
-        const skyY = this.camera.y;
-        const skyHeight = this.canvas.height + Math.abs(this.camera.y);
-
-        const gradient = this.ctx.createLinearGradient(0, skyY, 0, skyY + skyHeight);
-
+    drawFullscreenSky() {
+        if (!this.fullscreenCtx) return;
+        
+        // Градиент неба на весь экран (используем ту же логику что и в drawSky)
+        const gradient = this.fullscreenCtx.createLinearGradient(0, 0, 0, this.fullscreenCanvas.height);
+        
         switch (this.timeOfDay) {
             case 'day':
                 gradient.addColorStop(0, '#87CEEB'); // Небесно-голубой
@@ -1802,26 +1813,41 @@ class BabyVillagerGame {
                 break;
         }
 
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, skyY, this.canvas.width, skyHeight);
+        this.fullscreenCtx.fillStyle = gradient;
+        this.fullscreenCtx.fillRect(0, 0, this.fullscreenCanvas.width, this.fullscreenCanvas.height);
+    }
 
-        // Рисуем звезды ночью
-        if (this.timeOfDay === 'night') {
-            this.drawStars();
+    drawFullscreenClouds() {
+        if (!this.fullscreenCtx) return;
+        
+        this.fullscreenCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        
+        // Рассчитываем количество облаков для заполнения всей ширины экрана
+        const cloudCount = Math.ceil(this.fullscreenCanvas.width / 150) + 2;
+        
+        for (let i = 0; i < cloudCount; i++) {
+            // Горизонтальное движение с циклическим возвратом (как в оригинале)
+            let x = (i * 150 + this.frameCount * 0.3) % (this.fullscreenCanvas.width + 200) - 100;
+            const y = 50 + (i * 60) % 150;
+
+            // Если облако ушло за левый край, возвращаем его справа
+            if (x < -100) {
+                x = this.fullscreenCanvas.width + 100 + (i * 50) % 100;
+            }
+
+            this.drawFullscreenCloud(x, y);
         }
     }
 
-    drawStars() {
-        this.ctx.fillStyle = 'white';
-        for (let i = 0; i < 50; i++) {
-            const x = (i * 37) % this.canvas.width;
-            const y = this.camera.y + (i * 23) % (this.canvas.height / 2);
-            const size = Math.random() * 2;
-
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, size, 0, Math.PI * 2);
-            this.ctx.fill();
-        }
+    drawFullscreenCloud(x, y) {
+        if (!this.fullscreenCtx) return;
+        
+        this.fullscreenCtx.beginPath();
+        this.fullscreenCtx.arc(x, y, 20, 0, Math.PI * 2);
+        this.fullscreenCtx.arc(x + 25, y, 25, 0, Math.PI * 2);
+        this.fullscreenCtx.arc(x + 50, y, 20, 0, Math.PI * 2);
+        this.fullscreenCtx.arc(x + 25, y - 15, 20, 0, Math.PI * 2);
+        this.fullscreenCtx.fill();
     }
 
     updateShopButtons() {
@@ -2012,6 +2038,9 @@ class BabyVillagerGame {
     }
 
     render() {
+        // Рисуем полноэкранный паралакс
+        this.drawFullscreenParallax();
+
         // Очищаем canvas
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
@@ -2022,9 +2051,6 @@ class BabyVillagerGame {
 
         // Применяем камеру
         this.ctx.translate(0, -this.camera.y);
-
-        // Рисуем параллакс (включает небо, горы, деревья, облака)
-        this.drawParallax();
 
         // Рисуем платформы
         this.drawPlatforms();
@@ -2040,52 +2066,6 @@ class BabyVillagerGame {
 
         // Восстанавливаем контекст
         this.ctx.restore();
-    }
-
-    drawBackground() {
-        // Градиентный фон
-        const gradient = this.ctx.createLinearGradient(0, this.camera.y, 0, this.camera.y + this.canvas.height);
-        gradient.addColorStop(0, '#87CEEB');
-        gradient.addColorStop(0.5, '#98FB98');
-        gradient.addColorStop(1, '#90EE90');
-
-        this.ctx.fillStyle = gradient;
-        this.ctx.fillRect(0, this.camera.y, this.canvas.width, this.canvas.height);
-
-        // Облака
-        this.drawClouds();
-    }
-
-    drawClouds() {
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        // Оптимизация: рисуем только видимые облака
-        const startY = this.camera.y;
-        const endY = this.camera.y + this.canvas.height;
-
-        for (let i = 0; i < 8; i++) {
-            // Горизонтальное движение с циклическим возвратом
-            let x = (i * 150 + this.frameCount * 0.3) % (this.canvas.width + 200) - 100;
-            const y = this.camera.y + 50 + (i * 60) % 150;
-
-            // Если облако ушло за левый край, возвращаем его справа
-            if (x < -100) {
-                x = this.canvas.width + 100 + (i * 50) % 100;
-            }
-
-            // Рисуем только если облако в видимой области
-            if (y >= startY - 50 && y <= endY + 50) {
-                this.drawCloud(x, y);
-            }
-        }
-    }
-
-    drawCloud(x, y) {
-        this.ctx.beginPath();
-        this.ctx.arc(x, y, 20, 0, Math.PI * 2);
-        this.ctx.arc(x + 25, y, 25, 0, Math.PI * 2);
-        this.ctx.arc(x + 50, y, 20, 0, Math.PI * 2);
-        this.ctx.arc(x + 25, y - 15, 20, 0, Math.PI * 2);
-        this.ctx.fill();
     }
 
     drawPlatforms() {
