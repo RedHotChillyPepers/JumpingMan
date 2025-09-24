@@ -1,5 +1,5 @@
 // Версия игры
-const GAME_VERSION = '1.2.0';
+const GAME_VERSION = '1.2.1';
 
 class BabyVillagerGame {
     constructor() {
@@ -115,6 +115,9 @@ class BabyVillagerGame {
         // Загружаем скины из localStorage
         this.loadSkinsFromStorage();
 
+        // Инициализация Яндекс.Игры SDK (после инициализации shop)
+        this.initYandexSDK();
+
         // Физика
         this.gravity = 0.8;
         this.friction = 0.9;
@@ -129,6 +132,190 @@ class BabyVillagerGame {
         this.deltaTime = 0;
 
         this.init();
+    }
+
+    initYandexSDK() {
+        // Проверяем, что мы находимся в Яндекс.Играх
+        if (typeof YaGames !== 'undefined') {
+            YaGames.init().then(ysdk => {
+                this.ysdk = ysdk;
+                this.detectLanguage();
+                
+                // Уведомляем Яндекс.Игры, что игра готова к запуску
+                this.callGameReadyAPI();
+            }).catch(error => {
+                console.log('Yandex SDK initialization failed:', error);
+                this.setDefaultLanguage();
+            });
+        } else {
+            // Если SDK недоступен, используем язык по умолчанию
+            this.setDefaultLanguage();
+        }
+    }
+
+    callGameReadyAPI() {
+        if (this.ysdk && this.ysdk.features && this.ysdk.features.GameplayAPI) {
+            try {
+                this.ysdk.features.GameplayAPI.ready();
+                console.log('Game Ready API called successfully');
+            } catch (error) {
+                console.log('Game Ready API call failed:', error);
+            }
+        }
+    }
+
+    callGameplayStart() {
+        if (this.ysdk && this.ysdk.features && this.ysdk.features.GameplayAPI) {
+            try {
+                this.ysdk.features.GameplayAPI.start();
+                console.log('Gameplay Start API called successfully');
+            } catch (error) {
+                console.log('Gameplay Start API call failed:', error);
+            }
+        }
+    }
+
+    callGameplayStop() {
+        if (this.ysdk && this.ysdk.features && this.ysdk.features.GameplayAPI) {
+            try {
+                this.ysdk.features.GameplayAPI.stop();
+                console.log('Gameplay Stop API called successfully');
+            } catch (error) {
+                console.log('Gameplay Stop API call failed:', error);
+            }
+        }
+    }
+
+    detectLanguage() {
+        if (this.ysdk && this.ysdk.environment) {
+            // Получаем язык из SDK
+            const language = this.ysdk.environment.i18n.lang;
+            this.setLanguage(language);
+        } else {
+            this.setDefaultLanguage();
+        }
+    }
+
+    setLanguage(lang) {
+        this.currentLanguage = lang;
+        this.updateUITexts();
+    }
+
+    setDefaultLanguage() {
+        // Определяем язык браузера или используем русский по умолчанию
+        const browserLang = navigator.language || navigator.userLanguage;
+        const lang = browserLang.startsWith('ru') ? 'ru' : 'en';
+        this.setLanguage(lang);
+    }
+
+    updateUITexts() {
+        const texts = this.getTexts();
+        
+        // Обновляем тексты в HTML
+        const elements = {
+            'startBtn': texts.startGame,
+            'shopBtn': texts.shop,
+            'menuBtn': texts.mainMenu,
+            'continueBtn': texts.continue,
+            'restartBtn': texts.restart,
+            'backFromShopBtn': texts.back,
+            'doubleJumpBtn': texts.buyDoubleJump,
+            'soundBtn': texts.sound,
+            'jumpBtn': texts.jump
+        };
+
+        Object.entries(elements).forEach(([id, text]) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = text;
+            }
+        });
+
+        // Обновляем заголовки
+        const titleElement = document.querySelector('h1');
+        if (titleElement) {
+            titleElement.textContent = texts.gameTitle;
+        }
+
+        const shopTitleElement = document.querySelector('#shopScreen h2');
+        if (shopTitleElement) {
+            shopTitleElement.textContent = texts.shop;
+        }
+
+        const gameOverTitleElement = document.querySelector('#gameOverScreen h2');
+        if (gameOverTitleElement) {
+            gameOverTitleElement.textContent = texts.gameOver;
+        }
+
+        // Обновляем статистику
+        const highScoreElements = document.querySelectorAll('.stat-label');
+        highScoreElements.forEach(element => {
+            if (element.textContent.includes('Рекорд') || element.textContent.includes('Record')) {
+                element.textContent = texts.highScore + ':';
+            }
+        });
+
+        // Обновляем тексты скинов
+        this.updateSkinTexts(texts);
+    }
+
+    updateSkinTexts(texts) {
+        const skinNames = {
+            'default': texts.skinDefault,
+            'golden': texts.skinGolden,
+            'rainbow': texts.skinRainbow,
+            'fire': texts.skinFire,
+            'ice': texts.skinIce
+        };
+
+        // Обновляем названия скинов
+        Object.entries(skinNames).forEach(([skinId, skinName]) => {
+            const skinItem = document.querySelector(`[data-skin="${skinId}"]`);
+            if (skinItem) {
+                const nameElement = skinItem.querySelector('.skin-name');
+                if (nameElement) {
+                    nameElement.textContent = skinName;
+                }
+            }
+        });
+
+        // Обновляем цены скинов (только если shop инициализирован)
+        if (this.shop && this.shop.skins) {
+            this.updateShopSkins();
+        }
+    }
+
+    getTexts() {
+        const texts = {
+            ru: {
+                gameTitle: 'Джампер Мэн',
+                startGame: 'Начать игру',
+                shop: 'Магазин',
+                mainMenu: 'Главное меню',
+                continue: 'Продолжить',
+                restart: 'Начать заново',
+                back: 'Назад',
+                buyDoubleJump: 'Купить двойной прыжок',
+                sound: '🔊',
+                jump: '🦘',
+                gameOver: 'Игра окончена!',
+                highScore: 'Рекорд',
+                score: 'Счет',
+                coins: 'Монеты',
+                doubleJumps: 'Двойные прыжки',
+                // Тексты скинов
+                skinDefault: 'Классический',
+                skinGolden: 'Золотой',
+                skinRainbow: 'Радужный',
+                skinFire: 'Огненный',
+                skinIce: 'Ледяной',
+                skinFree: 'Бесплатно',
+                skinOwned: 'Куплено',
+                skinSelected: 'Выбрано'
+            }
+        };
+
+        return texts[this.currentLanguage] || texts.ru;
     }
 
     initSounds() {
@@ -509,6 +696,18 @@ class BabyVillagerGame {
     }
 
     setupEventListeners() {
+        // Запрещаем контекстное меню для всей игры
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Запрещаем выделение текста для всей игры
+        document.addEventListener('selectstart', (e) => {
+            e.preventDefault();
+            return false;
+        });
+
         // Кнопки
         document.getElementById('startBtn').addEventListener('click', () => this.startGame());
         document.getElementById('restartBtn').addEventListener('click', () => this.startGame());
@@ -720,6 +919,9 @@ class BabyVillagerGame {
 
         this.showGameScreen();
         this.updateUI();
+        
+        // Уведомляем Яндекс.Игры, что игровой процесс начался
+        this.callGameplayStart();
 
         // Запускаем фоновую музыку
         this.sounds.background();
@@ -967,6 +1169,9 @@ class BabyVillagerGame {
             continueBtn.style.display = 'none';
         }
 
+        // Уведомляем Яндекс.Игры, что игровой процесс остановлен
+        this.callGameplayStop();
+
         this.updateUI();
     }
 
@@ -1035,6 +1240,9 @@ class BabyVillagerGame {
 
         this.showGameScreen();
         this.updateUI();
+        
+        // Уведомляем Яндекс.Игры, что игровой процесс возобновился
+        this.callGameplayStart();
 
         // Запускаем фоновую музыку
         this.sounds.background();
@@ -1125,6 +1333,9 @@ class BabyVillagerGame {
 
         this.showGameScreen();
         this.updateUI();
+        
+        // Уведомляем Яндекс.Игры, что игровой процесс начался заново
+        this.callGameplayStart();
 
         // Запускаем фоновую музыку
         this.sounds.background();
@@ -1133,14 +1344,7 @@ class BabyVillagerGame {
     jump() {
         if (this.gameState !== 'playing') return;
 
-        if (this.player.onGround) {
-            // Обычный прыжок с земли
-            this.player.velocityY = this.player.jumpPower;
-            this.player.onGround = false;
-            this.player.doubleJumpAvailable = true;
-            this.player.doubleJumpUsed = false;
-            this.sounds.jump();
-        } else if (this.shop.doubleJumpCount > 0 && this.player.doubleJumpAvailable && !this.player.doubleJumpUsed) {
+        if (this.shop.doubleJumpCount > 0 && this.player.doubleJumpAvailable && !this.player.doubleJumpUsed) {
             // Двойной прыжок в воздухе - тратим один прыжок
             this.player.velocityY = this.player.jumpPower * 1.0; // Такая же высота как обычный прыжок
             this.player.doubleJumpUsed = true;
@@ -1157,7 +1361,7 @@ class BabyVillagerGame {
         if (this.player.onGround) {
             this.player.velocityY = this.player.jumpPower;
             this.player.onGround = false;
-            this.player.doubleJumpAvailable = true;
+            this.player.doubleJumpAvailable = true; // Двойной прыжок доступен после автоматического прыжка
             this.player.doubleJumpUsed = false;
             this.sounds.jump();
         }
@@ -1262,7 +1466,7 @@ class BabyVillagerGame {
                 this.player.y = platform.y - this.player.height;
                 this.player.velocityY = 0;
                 this.player.onGround = true;
-                this.player.doubleJumpAvailable = false;
+                this.player.doubleJumpAvailable = true; // Двойной прыжок доступен после столкновения с любой платформой
                 this.player.doubleJumpUsed = false;
 
                 // Обработка разных типов платформ
@@ -1474,8 +1678,6 @@ class BabyVillagerGame {
             doubleJumpCountElement.textContent = this.shop.doubleJumpCount;
         }
 
-        // Обновляем состояние мобильной кнопки двойного прыжка
-        this.updateMobileJumpButton();
 
         // Отрисовываем иконку монеты
         this.drawCoinIcon();
@@ -1522,7 +1724,9 @@ class BabyVillagerGame {
                 this.player.doubleJumpAvailable &&
                 !this.player.doubleJumpUsed;
 
+
             jumpBtn.disabled = !canUseDoubleJump;
+
 
             if (canUseDoubleJump) {
                 jumpBtn.style.background = 'rgba(0, 150, 0, 0.3)';
@@ -1650,6 +1854,11 @@ class BabyVillagerGame {
     }
 
     updateShopSkins() {
+        // Проверяем, что shop.skins инициализирован
+        if (!this.shop || !this.shop.skins) {
+            return;
+        }
+        
         // Обновляем превью скинов
         Object.keys(this.shop.skins).forEach(skinId => {
             const skinItem = document.querySelector(`[data-skin="${skinId}"]`);
@@ -1665,10 +1874,19 @@ class BabyVillagerGame {
 
                 // Обновляем цену
                 if (priceElement) {
+                    const texts = this.getTexts();
                     if (skin.owned) {
-                        priceElement.textContent = 'Куплено';
+                        if (skinId === this.shop.currentSkin) {
+                            priceElement.textContent = texts.skinSelected;
+                        } else {
+                            priceElement.textContent = texts.skinOwned;
+                        }
                     } else {
-                        priceElement.textContent = skin.price.toString();
+                        if (skinId === 'default') {
+                            priceElement.textContent = texts.skinFree;
+                        } else {
+                            priceElement.textContent = skin.price.toString();
+                        }
                     }
                 }
 
@@ -1721,7 +1939,7 @@ class BabyVillagerGame {
             this.shop.currentSkin = skinId;
             localStorage.setItem('babyVillagerCurrentSkin', skinId);
             this.updateShopSkins();
-            this.updateMainScreenCharacter(); // Обновляем персонажа на главном экране
+            this.drawMainScreenCharacter(); // Обновляем персонажа на главном экране
         }
     }
 
@@ -2585,6 +2803,7 @@ class BabyVillagerGame {
         this.updateParallax();
         this.render();
         this.drawMainScreenCharacter(); // Обновляем персонажа на главном экране
+        this.updateMobileJumpButton(); // Обновляем мобильную кнопку прыжка каждый кадр
 
         requestAnimationFrame((time) => this.gameLoop(time));
     }
@@ -2595,13 +2814,3 @@ class BabyVillagerGame {
 document.addEventListener('DOMContentLoaded', () => {
     window.game = new BabyVillagerGame();
 });
-
-// Интеграция с Яндекс.Играми
-if (typeof YaGames !== 'undefined') {
-    YaGames.init().then(ysdk => {
-        window.ysdk = ysdk;
-        console.log('Яндекс.Игры SDK загружен');
-
-        // Реклама теперь показывается только при продолжении игры
-    });
-}
