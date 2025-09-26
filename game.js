@@ -1,8 +1,19 @@
 // Версия игры
-const GAME_VERSION = '1.2.2';
+const GAME_VERSION = '1.2.3.2';
 
 class BabyVillagerGame {
     constructor() {
+        // Состояние загрузки
+        this.loadingState = {
+            sdkInitialized: false,
+            languageDetected: false,
+            gameReady: false
+        };
+        
+        // Время начала загрузки для контроля минимального времени показа
+        this.loadingStartTime = Date.now();
+        this.minLoadingTime = 2000; // Минимум 2 секунды показа экрана загрузки
+
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.canvas.width = 400;
@@ -122,9 +133,6 @@ class BabyVillagerGame {
         // Загружаем скины из localStorage
         this.loadSkinsFromStorage();
 
-        // Инициализация Яндекс.Игры SDK (после инициализации shop)
-        this.initYandexSDK();
-
         // Физика
         this.gravity = 0.8;
         this.friction = 0.9;
@@ -139,6 +147,9 @@ class BabyVillagerGame {
         this.deltaTime = 0;
 
         this.init();
+        
+        // Инициализация Яндекс.Игры SDK (после инициализации всех компонентов)
+        this.initYandexSDK();
     }
 
     setFullscreenCanvasSize() {
@@ -150,32 +161,127 @@ class BabyVillagerGame {
     }
 
     initYandexSDK() {
+        this.updateLoadingProgress(1); // Начальный прогресс
+        
         // Проверяем, что мы находимся в Яндекс.Играх
         if (typeof YaGames !== 'undefined') {
             YaGames.init().then(ysdk => {
                 this.ysdk = ysdk;
-                this.detectLanguage();
+                this.loadingState.sdkInitialized = true;
                 
-                // Уведомляем Яндекс.Игры, что игра готова к запуску
-                this.callGameReadyAPI();
+                // Задержка перед следующим этапом
+                setTimeout(() => {
+                    this.updateLoadingProgress(2);
+                    this.detectLanguage();
+                    this.loadingState.languageDetected = true;
+                    
+                    setTimeout(() => {
+                        this.updateLoadingProgress(3);
+                        // Уведомляем Яндекс.Игры, что игра готова к запуску
+                        this.callGameReadyAPI();
+                        this.loadingState.gameReady = true;
+                        
+                        console.log('Yandex Games SDK initialized');
+                        this.checkLoadingComplete();
+                    }, 600); // 600мс для подготовки игры
+                }, 600); // 600мс для определения языка
             }).catch(error => {
                 console.log('Yandex SDK initialization failed:', error);
                 this.setDefaultLanguage();
+                // Даже при ошибке соблюдаем минимальное время
+                this.checkLoadingComplete();
             });
         } else {
-            // Если SDK недоступен, используем язык по умолчанию
-            this.setDefaultLanguage();
+            // Если SDK недоступен, симулируем процесс загрузки
+            this.simulateLoadingProcess();
         }
     }
 
     callGameReadyAPI() {
         if (this.ysdk && this.ysdk.features && this.ysdk.features.GameplayAPI) {
             try {
-                this.ysdk.features.GameplayAPI.ready();
+                this.ysdk.features.LoadingAPI.ready();
                 console.log('Game Ready API called successfully');
             } catch (error) {
                 console.log('Game Ready API call failed:', error);
             }
+        }
+    }
+
+    simulateLoadingProcess() {
+        // Симулируем процесс загрузки для автономного режима
+        this.setDefaultLanguage();
+        
+        setTimeout(() => {
+            this.updateLoadingProgress(2);
+            this.loadingState.sdkInitialized = true;
+            
+            setTimeout(() => {
+                this.updateLoadingProgress(3);
+                this.loadingState.languageDetected = true;
+                
+                setTimeout(() => {
+                    this.loadingState.gameReady = true;
+                    this.checkLoadingComplete();
+                }, 600);
+            }, 600);
+        }, 600);
+    }
+
+    updateLoadingProgress(step) {
+        const loadingBar = document.querySelector('.loading-bar');
+        
+        // Обновляем прогресс-бар в зависимости от этапа
+        if (loadingBar) {
+            // Убираем все классы шагов
+            loadingBar.className = 'loading-bar';
+            
+            switch(step) {
+                case 1:
+                    loadingBar.classList.add('step-1');
+                    break;
+                case 2:
+                    loadingBar.classList.add('step-2');
+                    break;
+                case 3:
+                    loadingBar.classList.add('step-3');
+                    break;
+                case 4:
+                    loadingBar.classList.add('complete');
+                    break;
+            }
+        }
+    }
+
+    checkLoadingComplete() {
+        const { sdkInitialized, languageDetected, gameReady } = this.loadingState;
+        
+        if (sdkInitialized && languageDetected && gameReady) {
+            this.updateLoadingProgress(4); // Завершаем прогресс
+            
+            // Проверяем, прошло ли минимальное время загрузки
+            const elapsedTime = Date.now() - this.loadingStartTime;
+            const remainingTime = Math.max(0, this.minLoadingTime - elapsedTime);
+            
+            setTimeout(() => {
+                this.hideLoadingScreen();
+            }, remainingTime + 300); // +300мс дополнительной задержки
+        }
+    }
+
+    hideLoadingScreen() {
+        const loadingScreen = document.getElementById('loadingScreen');
+        const gameContainer = document.getElementById('gameContainer');
+        
+        if (loadingScreen) {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+                // Показываем основной контейнер игры
+                if (gameContainer) {
+                    gameContainer.classList.add('loaded');
+                }
+            }, 500); // Время соответствует CSS transition
         }
     }
 
@@ -272,6 +378,14 @@ class BabyVillagerGame {
 
         // Обновляем тексты скинов
         this.updateSkinTexts(texts);
+
+        // Обновляем текст загрузки
+        const loadingTextElement = document.querySelector('.loading-text');
+        if (loadingTextElement) {
+            // Сохраняем анимированные точки
+            const dotsSpan = loadingTextElement.querySelector('.loading-dots');
+            loadingTextElement.innerHTML = texts.loading + (dotsSpan ? dotsSpan.outerHTML : '<span class="loading-dots"></span>');
+        }
     }
 
     updateSkinTexts(texts) {
@@ -318,6 +432,7 @@ class BabyVillagerGame {
                 score: 'Счет',
                 coins: 'Монеты',
                 doubleJumps: 'Двойные прыжки',
+                loading: 'Загрузка',
                 // Тексты скинов
                 skinDefault: 'Классический',
                 skinGolden: 'Золотой',
@@ -1198,9 +1313,9 @@ class BabyVillagerGame {
         console.log('Нажата кнопка "Продолжить"');
 
         // Показываем рекламу для продолжения игры
-        if (typeof YaGames !== 'undefined' && window.ysdk) {
+        if (this.ysdk) {
             console.log('Показываем рекламу...');
-            window.ysdk.adv.showRewardedVideo({
+            this.ysdk.adv.showRewardedVideo({
                 callbacks: {
                     onOpen: () => {
                         console.log('Реклама для продолжения открыта');
@@ -2038,7 +2153,7 @@ class BabyVillagerGame {
     }
 
     render() {
-        // Рисуем полноэкранный паралакс
+        // Рисуем полноэкранный паралакс (всегда, включая экран загрузки)
         this.drawFullscreenParallax();
 
         // Очищаем canvas

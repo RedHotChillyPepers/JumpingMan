@@ -44,6 +44,111 @@ body {
     pointer-events: none;
 }
 
+/* Экран загрузки */
+#loadingScreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: transparent; /* Используем полноэкранный паралакс */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    transition: opacity 0.5s ease-out;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+    max-width: 400px;
+    padding: 40px;
+}
+
+.loading-content h1 {
+    background: linear-gradient(135deg, #FF4444 0%, #FF6B35 100%);
+    color: white;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font-weight: bold;
+}
+
+
+.loading-text {
+    background: linear-gradient(135deg, #FF4444 0%, #FF6B35 100%);
+    color: white;
+    font-size: 2em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+    padding: 20px 30px;
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    font-weight: bold;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: loadingDots 1.5s infinite;
+    width: 1.5em;
+    display: inline-block;
+    text-align: left;
+}
+
+@keyframes loadingDots {
+    0% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+    100% { content: ''; }
+}
+
+.loading-progress {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.loading-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+    border-radius: 3px;
+    width: 0%;
+    transition: width 0.3s ease-out;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
+    position: relative;
+}
+
+.loading-bar::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    border-radius: 3px;
+}
+
+/* Анимация будет управляться JavaScript */
+.loading-bar.step-1 { width: 25%; }
+.loading-bar.step-2 { width: 60%; }
+.loading-bar.step-3 { width: 90%; }
+.loading-bar.complete { width: 100%; }
+
 #gameContainer {
     position: relative;
     width: 100vw;
@@ -53,6 +158,13 @@ body {
     border-radius: 20px;
     overflow: hidden;
     background: transparent; /* Прозрачный фон для видимости паралакса */
+    opacity: 0; /* Скрыт пока идет загрузка */
+    transition: opacity 0.5s ease-in;
+}
+
+/* Показываем контейнер когда загрузка завершена */
+#gameContainer.loaded {
+    opacity: 1;
 }
 
 /* На мобильных устройствах убираем ограничения размера */
@@ -71,6 +183,19 @@ body {
         box-shadow: none;
         width: 100vw;
         height: 100vh;
+    }
+
+    /* Адаптивные стили для экрана загрузки на мобильных */
+    .loading-content {
+        max-width: 320px;
+        padding: 30px 20px;
+        margin: 0 20px;
+    }
+
+    .loading-text {
+        font-size: 1.6em;
+        margin-bottom: 20px;
+        padding: 15px 25px;
     }
 }
 
@@ -691,6 +816,8 @@ h1 {
 .ad-icon {
     font-size: 1.3em;
     animation: pulse 2s infinite;
+    content: "📺";
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 
 .secondary-btn {
