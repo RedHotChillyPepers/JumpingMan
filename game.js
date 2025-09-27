@@ -1206,9 +1206,6 @@ class BabyVillagerGame {
         document.getElementById('gameOverScreen').classList.add('hidden');
         document.getElementById('shopScreen').classList.add('hidden');
         this.gameState = 'start';
-        
-        // Вызываем GameReady при показе главного экрана
-        this.callGameReadyAPI();
     }
 
     showShop() {

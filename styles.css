@@ -159,7 +159,7 @@ body {
     overflow: hidden;
     background: transparent; /* Прозрачный фон для видимости паралакса */
     opacity: 0; /* Скрыт пока идет загрузка */
-    transition: opacity 0.5s ease-in;
+    transition: opacity 0.2s ease-in;
 }
 
 /* Показываем контейнер когда загрузка завершена */
