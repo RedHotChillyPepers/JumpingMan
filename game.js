@@ -1,5 +1,5 @@
 // Версия игры
-const GAME_VERSION = '1.2.3.2';
+const GAME_VERSION = '1.2.3.4';
 
 class BabyVillagerGame {
     constructor() {
@@ -177,10 +177,7 @@ class BabyVillagerGame {
                     
                     setTimeout(() => {
                         this.updateLoadingProgress(3);
-                        // Уведомляем Яндекс.Игры, что игра готова к запуску
-                        this.callGameReadyAPI();
                         this.loadingState.gameReady = true;
-                        
                         console.log('Yandex Games SDK initialized');
                         this.checkLoadingComplete();
                     }, 600); // 600мс для подготовки игры
@@ -280,6 +277,8 @@ class BabyVillagerGame {
                 // Показываем основной контейнер игры
                 if (gameContainer) {
                     gameContainer.classList.add('loaded');
+                    // Уведомляем Яндекс.Игры, что игра готова к запуску
+                    this.callGameReadyAPI();
                 }
             }, 500); // Время соответствует CSS transition
         }
@@ -1207,6 +1206,9 @@ class BabyVillagerGame {
         document.getElementById('gameOverScreen').classList.add('hidden');
         document.getElementById('shopScreen').classList.add('hidden');
         this.gameState = 'start';
+        
+        // Вызываем GameReady при показе главного экрана
+        this.callGameReadyAPI();
     }
 
     showShop() {
