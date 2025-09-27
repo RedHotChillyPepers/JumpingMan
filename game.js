@@ -799,6 +799,26 @@ class BabyVillagerGame {
         playNote();
     }
 
+    stopBackgroundMusic() {
+        // Останавливаем фоновую музыку
+        this.backgroundMusicPlaying = false;
+        
+        // Приостанавливаем аудио контекст для экономии ресурсов
+        if (this.audioContext && this.audioContext.state === 'running') {
+            this.audioContext.suspend().catch(error => {
+                console.log('Не удалось приостановить аудио контекст:', error);
+            });
+        }
+    }
+
+    resumeBackgroundMusic() {
+        // Возобновляем аудио контекст
+        if (this.audioContext && this.audioContext.state === 'suspended') {
+            this.audioContext.resume().catch(error => {
+                console.log('Не удалось возобновить аудио контекст:', error);
+            });
+        }
+    }
 
     toggleSound() {
         this.soundEnabled = !this.soundEnabled;
@@ -943,6 +963,25 @@ class BabyVillagerGame {
         // Обработка изменения размера окна
         window.addEventListener('resize', () => {
             this.setFullscreenCanvasSize();
+        });
+
+        // Остановка музыки при сворачивании браузера или переходе на другую вкладку
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                // Браузер свернут или перешли на другую вкладку - останавливаем музыку
+                this.stopBackgroundMusic();
+            } else {
+                // Вернулись в браузер - возобновляем музыку если игра активна
+                if (this.gameState === 'playing' && this.soundEnabled) {
+                    this.resumeBackgroundMusic();
+                    this.sounds.background();
+                }
+            }
+        });
+
+        // Дополнительная остановка музыки при потере фокуса окна
+        window.addEventListener('blur', () => {
+            this.stopBackgroundMusic();
         });
     }
 
