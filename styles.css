@@ -154,7 +154,6 @@ body {
     width: 100vw;
     height: 100vh;
     max-width: 500px;
-    max-height: 800px;
     border-radius: 20px;
     overflow: hidden;
     background: transparent; /* Прозрачный фон для видимости паралакса */
@@ -221,6 +220,264 @@ body {
     align-items: center;
     text-align: center;
     padding: 20px;
+    gap: 15px;
+}
+
+/* Адаптивность по высоте экрана */
+@media (max-height: 800px) {
+    .screen {
+        gap: 12px !important;
+        padding: 18px !important;
+    }
+    
+    h1 {
+        font-size: 2.2em !important;
+        padding: 18px 28px !important;
+    }
+    
+    .stats-container {
+        gap: 25px !important;
+        margin: 10px 0 15px 0 !important;
+    }
+    
+    .stat-item {
+        padding: 10px 16px !important;
+        min-height: 55px !important;
+        min-width: 110px !important;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 1em !important;
+    }
+    
+    .character-preview {
+        transform: scale(0.9) !important;
+        margin: 15px 0 !important;
+    }
+    
+    #startScreen .btn {
+        width: 200px !important;
+        padding: 12px 22px !important;
+        font-size: 1.1em !important;
+    }
+    
+    .version-info {
+        font-size: 0.85em !important;
+        padding: 7px 14px !important;
+    }
+    
+    /* Game Over экран */
+    #finalScore {
+        font-size: 1.6em !important;
+        padding: 12px 20px !important;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 190px !important;
+        min-width: 190px !important;
+        max-width: 190px !important;
+        padding: 12px 20px !important;
+        font-size: 1em !important;
+        justify-content: center !important;
+    }
+    
+    .game-over-buttons {
+        gap: 12px !important;
+    }
+}
+
+@media (max-height: 700px) {
+    .screen {
+        gap: 10px !important;
+        padding: 15px !important;
+    }
+    
+    h1 {
+        font-size: 2em !important;
+        padding: 15px 25px !important;
+    }
+    
+    .stats-container {
+        gap: 20px !important;
+        margin: 8px 0 12px 0 !important;
+    }
+    
+    .stat-item {
+        padding: 8px 14px !important;
+        min-height: 50px !important;
+        min-width: 100px !important;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.95em !important;
+    }
+    
+    .character-preview {
+        transform: scale(0.8) !important;
+        margin: 12px 0 !important;
+    }
+    
+    #startScreen .btn {
+        width: 180px !important;
+        padding: 10px 20px !important;
+        font-size: 1em !important;
+    }
+    
+    .version-info {
+        font-size: 0.8em !important;
+        padding: 6px 12px !important;
+    }
+    
+    /* Game Over экран */
+    #finalScore {
+        font-size: 1.4em !important;
+        padding: 10px 18px !important;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 170px !important;
+        min-width: 170px !important;
+        max-width: 170px !important;
+        padding: 10px 18px !important;
+        font-size: 0.95em !important;
+        justify-content: center !important;
+    }
+    
+    .game-over-buttons {
+        gap: 10px !important;
+    }
+}
+
+@media (max-height: 600px) {
+    .screen {
+        gap: 8px !important;
+        padding: 10px !important;
+    }
+    
+    h1 {
+        font-size: 1.8em !important;
+        padding: 12px 20px !important;
+    }
+    
+    .stats-container {
+        gap: 15px !important;
+        margin: 6px 0 10px 0 !important;
+    }
+    
+    .stat-item {
+        padding: 6px 12px !important;
+        min-height: 45px !important;
+        min-width: 90px !important;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.9em !important;
+    }
+    
+    .character-preview {
+        transform: scale(0.7) !important;
+        margin: 10px 0 !important;
+    }
+    
+    #startScreen .btn {
+        width: 160px !important;
+        padding: 8px 16px !important;
+        font-size: 0.9em !important;
+    }
+    
+    .version-info {
+        font-size: 0.7em !important;
+        padding: 4px 10px !important;
+    }
+    
+    /* Game Over экран */
+    #finalScore {
+        font-size: 1.2em !important;
+        padding: 8px 16px !important;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 150px !important;
+        min-width: 150px !important;
+        max-width: 150px !important;
+        padding: 8px 16px !important;
+        font-size: 0.9em !important;
+        justify-content: center !important;
+    }
+    
+    .game-over-buttons {
+        gap: 8px !important;
+    }
+}
+
+@media (max-height: 500px) {
+    .screen {
+        gap: 5px !important;
+        padding: 8px !important;
+    }
+    
+    h1 {
+        font-size: 1.5em !important;
+        padding: 10px 16px !important;
+    }
+    
+    .stats-container {
+        gap: 12px !important;
+        margin: 4px 0 8px 0 !important;
+    }
+    
+    .stat-item {
+        padding: 4px 10px !important;
+        min-height: 40px !important;
+        min-width: 80px !important;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.85em !important;
+    }
+    
+    .character-preview {
+        transform: scale(0.6) !important;
+        margin: 5px 0 !important;
+    }
+    
+    #startScreen .btn {
+        width: 140px !important;
+        padding: 6px 12px !important;
+        font-size: 0.8em !important;
+    }
+    
+    .version-info {
+        font-size: 0.6em !important;
+        padding: 3px 8px !important;
+    }
+    
+    /* Game Over экран */
+    #finalScore {
+        font-size: 1em !important;
+        padding: 6px 12px !important;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 130px !important;
+        min-width: 130px !important;
+        max-width: 130px !important;
+        padding: 6px 12px !important;
+        font-size: 0.8em !important;
+        justify-content: center !important;
+    }
+    
+    .game-over-buttons {
+        gap: 6px !important;
+    }
 }
 
 .hidden {
@@ -231,7 +488,7 @@ h1 {
     background: linear-gradient(135deg, #FF4444 0%, #FF6B35 100%);
     color: white;
     font-size: 2.5em;
-    margin-bottom: 20px;
+    margin: 0;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
     padding: 20px 30px;
     border-radius: 20px;
@@ -252,14 +509,14 @@ h1 {
 }
 
 .character-preview {
-    margin: 20px 0 30px 0;
+    margin: 20px 0;
     animation: bounce 2s infinite;
 }
 
 /* Контейнер для кнопок на главном экране */
 #startScreen .btn {
     display: block;
-    margin: 15px auto;
+    margin: 0;
     width: 220px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -267,7 +524,7 @@ h1 {
 }
 
 .version-info {
-    margin-top: 20px;
+    margin: 0;
     font-size: 0.9em;
     color: white;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
@@ -292,7 +549,7 @@ h1 {
 .stats-container {
     display: flex;
     gap: 30px;
-    margin: 10px 0 30px 0;
+    margin: 0;
     justify-content: center;
     align-items: center;
 }
@@ -307,6 +564,8 @@ h1 {
     backdrop-filter: blur(15px);
     border: 2px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    min-height: 60px;
+    min-width: 120px;
 }
 
 .stat-label {
@@ -364,13 +623,10 @@ h1 {
     margin-left: auto;
     margin-right: auto;
     padding-right: 10px;
+    overflow-x: hidden;
 }
 
-.shop-item {
-    width: 100%;
-    flex-shrink: 0;
-}
-
+/* Предотвращаем деформацию кнопок в магазине */
 .shop-btn {
     display: flex;
     align-items: center;
@@ -388,7 +644,40 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     width: 100%;
     text-align: left;
+    min-height: 70px;
+    flex-shrink: 0;
 }
+
+.shop-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 0; /* Позволяет тексту сжиматься */
+}
+
+.shop-item-name {
+    color: white;
+    font-size: 1.1em;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shop-item-desc {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.shop-item {
+    width: 100%;
+    flex-shrink: 0;
+}
+
 
 .shop-btn:hover:not(:disabled) {
     background: rgba(0, 0, 0, 0.3);
@@ -454,10 +743,13 @@ h1 {
     font-size: 1.2em;
     border-radius: 25px;
     cursor: pointer;
-    margin: 10px;
+    margin: 0;
     box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     transition: all 0.3s ease;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn:hover {
@@ -473,8 +765,18 @@ h1 {
 
 
 #gameScreen {
-    justify-content: flex-start;
+    justify-content: center;
+    align-items: center;
     padding: 0;
+    height: 100vh;
+    /* Предотвращаем переполнение */
+    overflow: hidden;
+    /* Обеспечиваем правильное позиционирование */
+    position: relative;
+    /* Принудительно ограничиваем размеры */
+    max-width: 100%;
+    max-height: 100%;
+    box-sizing: border-box;
 }
 
 #ui {
@@ -746,10 +1048,23 @@ h1 {
 }
 
 #gameCanvas {
-    width: 100%;
-    height: 100%;
     background: transparent;
     cursor: pointer;
+    display: block;
+    margin: 0 auto;
+    /* Предотвращаем выход за границы контейнера */
+    max-width: 100% !important;
+    max-height: 100% !important;
+    /* Обеспечиваем правильное масштабирование */
+    object-fit: contain;
+    /* Предотвращаем деформацию */
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+    /* Принудительно ограничиваем размеры */
+    box-sizing: border-box;
+    /* Предотвращаем переполнение */
+    overflow: hidden;
 }
 
 #gameOverScreen {
@@ -780,10 +1095,25 @@ h1 {
 
 .game-over-buttons {
     display: flex;
-    gap: 15px;
+    flex-direction: column;
+    gap: 12px;
     margin: 20px 0;
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
+}
+
+/* Предотвращаем деформацию кнопок на экране Game Over */
+.game-over-buttons .btn,
+.game-over-buttons .continue-btn,
+.game-over-buttons .secondary-btn {
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 12px 20px;
+    font-size: 1em;
 }
 
 .continue-btn {
@@ -798,6 +1128,7 @@ h1 {
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     position: relative;
     overflow: hidden;
@@ -824,9 +1155,12 @@ h1 {
     background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
     color: white;
     border: 2px solid rgba(255, 255, 255, 0.3);
-    margin-top: 10px;
+    margin-top: 0;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .secondary-btn:hover {
@@ -854,6 +1188,8 @@ h1 {
     padding: 0 20px;
     z-index: 20;
     pointer-events: none;
+    /* По умолчанию скрыты, будут показаны через JavaScript */
+    display: none;
 }
 
 .control-btn {
@@ -875,6 +1211,8 @@ h1 {
     user-select: none;
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
+    /* Улучшенная тактильная обратная связь */
+    touch-action: manipulation;
 }
 
 .control-btn:active {
@@ -907,7 +1245,54 @@ h1 {
     border-color: rgba(0, 255, 0, 1);
 }
 
-/* Мобильная версия - специальное расположение кнопок */
+/* Стили для мобильных устройств */
+.mobile-controls.mobile-device {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.mobile-controls.mobile-device .left-btn {
+    order: 1;
+}
+
+.mobile-controls.mobile-device .right-btn {
+    order: 3;
+}
+
+.mobile-controls.mobile-device .jump-btn {
+    order: 2;
+    position: absolute;
+    bottom: 100px;
+    right: 20px;
+}
+
+/* Стили для планшетов */
+.mobile-controls.tablet-device {
+    display: flex !important;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 0 30px;
+    bottom: 50px;
+}
+
+.mobile-controls.tablet-device .control-btn {
+    width: 100px;
+    height: 100px;
+    font-size: 36px;
+    border-width: 4px;
+}
+
+.mobile-controls.tablet-device .jump-btn {
+    position: absolute;
+    bottom: 120px;
+    right: 30px;
+    width: 110px;
+    height: 110px;
+    font-size: 32px;
+}
+
+/* Мобильная версия - специальное расположение кнопок (fallback для старых браузеров) */
 @media (max-width: 768px) {
     .mobile-controls {
         display: flex;
@@ -931,33 +1316,389 @@ h1 {
     }
 }
 
-/* Скрываем кнопки на десктопе */
+/* Стили для десктопа */
 @media (min-width: 769px) {
     .mobile-controls {
         display: none;
     }
+    
+    /* Десктопная версия - портретная ориентация */
+    #gameContainer {
+        width: 500px;
+        max-width: 500px;
+        overflow: hidden;
+    }
+    
+    /* Убеждаемся что кнопки не растягиваются */
+    .btn {
+        min-width: 200px;
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Заголовки адаптируются */
+    h1 {
+        font-size: 2.2em;
+        padding: 18px 28px;
+        max-width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    /* Статистика на главном экране */
+    .stats-container {
+        gap: 25px;
+        margin: 15px 0 25px 0;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .stat-item {
+        min-width: 120px;
+        padding: 10px 15px;
+        flex-shrink: 0;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 1em;
+        white-space: nowrap;
+    }
 }
+
+/* Большие десктопы */
+@media (min-width: 1024px) {
+    #gameContainer {
+        width: 600px;
+        max-width: 600px;
+    }
+    
+    h1 {
+        font-size: 2.5em;
+        padding: 20px 30px;
+    }
+    
+    .btn {
+        font-size: 1.3em;
+        padding: 18px 35px;
+        min-width: 220px;
+        max-width: 280px;
+    }
+    
+    .stats-container {
+        gap: 30px;
+        margin: 20px 0 30px 0;
+    }
+    
+    .stat-item {
+        min-width: 140px;
+        padding: 12px 18px;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 1.1em;
+    }
+    
+    
+    /* Кнопки на экране Game Over для десктопа */
+    .game-over-buttons {
+        max-width: none;
+        gap: 15px;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 200px !important;
+        min-width: 200px !important;
+        max-width: 200px !important;
+        padding: 15px 25px;
+        font-size: 1.1em;
+    }
+}
+
 
 /* Адаптивность для мобильных устройств */
 @media (max-width: 480px) {
     h1 {
-        font-size: 2em;
+        font-size: 1.8em;
+        padding: 15px 20px;
+        max-width: 95%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
     .btn {
-        padding: 12px 24px;
-        font-size: 1em;
+        padding: 12px 20px;
+        font-size: 0.95em;
+        min-width: 180px;
+        max-width: 90%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     
+    /* Статистика на маленьких экранах */
+    .stats-container {
+        gap: 15px;
+        margin: 10px 0 20px 0;
+        flex-wrap: wrap;
+    }
+    
+    .stat-item {
+        min-width: 100px;
+        padding: 8px 12px;
+        font-size: 0.9em;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.9em;
+        white-space: nowrap;
+    }
     
     .control-btn {
-        width: 75px;
-        height: 75px;
-        font-size: 28px;
+        width: 70px;
+        height: 70px;
+        font-size: 24px;
     }
     
     .mobile-controls {
-        bottom: 30px;
+        bottom: 25px;
         padding: 0 15px;
+    }
+    
+    /* UI элементы в игре */
+    #ui {
+        padding: 10px 15px;
+        min-height: 55px;
+        gap: 6px;
+    }
+    
+    #coins, #doubleJumps, #score {
+        min-width: 70px;
+        min-height: 40px;
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
+    
+    .sound-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1em;
+    }
+    
+    /* Магазин на мобильных */
+    .shop-items {
+        max-width: 95%;
+        padding-right: 5px;
+    }
+    
+    .shop-btn {
+        padding: 12px 16px;
+        min-height: 60px;
+        font-size: 0.9em;
+    }
+    
+    .shop-item-name {
+        font-size: 1em;
+    }
+    
+    .shop-item-desc {
+        font-size: 0.8em;
+    }
+    
+    .skins-grid {
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 12px;
+    }
+    
+    .skin-preview {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .skin-name {
+        font-size: 0.8em;
+    }
+    
+    .skin-price {
+        font-size: 0.7em;
+    }
+    
+    
+    /* Кнопки Game Over на мобильных */
+    .game-over-buttons {
+        max-width: none;
+        gap: 10px;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 180px !important;
+        min-width: 180px !important;
+        max-width: 180px !important;
+        padding: 10px 18px;
+        font-size: 0.95em;
+    }
+}
+
+
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+    h1 {
+        font-size: 1.6em;
+        padding: 12px 16px;
+    }
+    
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.9em;
+        min-width: 160px;
+    }
+    
+    .stats-container {
+        gap: 10px;
+        margin: 8px 0 15px 0;
+    }
+    
+    .stat-item {
+        min-width: 90px;
+        padding: 6px 10px;
+        font-size: 0.8em;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.8em;
+    }
+    
+    .control-btn {
+        width: 65px;
+        height: 65px;
+        font-size: 22px;
+    }
+    
+    #ui {
+        padding: 8px 12px;
+        min-height: 50px;
+        gap: 5px;
+    }
+    
+    #coins, #doubleJumps, #score {
+        min-width: 65px;
+        min-height: 35px;
+        padding: 5px 8px;
+        font-size: 0.8em;
+    }
+    
+    .sound-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 0.9em;
+    }
+    
+    /* Магазин на очень маленьких экранах */
+    .shop-items {
+        max-width: 98%;
+        padding-right: 2px;
+    }
+    
+    .shop-btn {
+        padding: 10px 14px;
+        min-height: 55px;
+        font-size: 0.85em;
+    }
+    
+    .shop-item-name {
+        font-size: 0.9em;
+    }
+    
+    .shop-item-desc {
+        font-size: 0.75em;
+    }
+    
+    .skins-grid {
+        grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+        gap: 10px;
+    }
+    
+    .skin-preview {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .skin-name {
+        font-size: 0.75em;
+    }
+    
+    .skin-price {
+        font-size: 0.65em;
+    }
+    
+    /* Кнопки Game Over на очень маленьких экранах */
+    .game-over-buttons {
+        max-width: none;
+        gap: 8px;
+    }
+    
+    .game-over-buttons .btn,
+    .game-over-buttons .continue-btn,
+    .game-over-buttons .secondary-btn {
+        width: 160px !important;
+        min-width: 160px !important;
+        max-width: 160px !important;
+        padding: 8px 16px;
+        font-size: 0.9em;
+    }
+}
+
+/* Очень маленькие экраны - еще более агрессивное уменьшение отступов */
+@media (max-height: 400px) {
+    .screen {
+        gap: 3px !important;
+        padding: 5px !important;
+    }
+    
+    h1 {
+        font-size: 1.3em !important;
+        padding: 8px 12px !important;
+    }
+    
+    .stats-container {
+        gap: 6px !important;
+        margin: 5px 0 8px 0 !important;
+    }
+    
+    .stat-item {
+        min-height: 45px !important;
+        min-width: 45px !important;
+        padding: 4px 8px !important;
+    }
+    
+    .stat-label, .stat-value {
+        font-size: 0.8em !important;
+    }
+    
+    .character-preview {
+        transform: scale(0.5) !important;
+        margin: 2px 0 !important;
+    }
+    
+    #startScreen .btn {
+        width: 120px !important;
+        padding: 5px 10px !important;
+        font-size: 0.75em !important;
+    }
+    
+    .version-info {
+        font-size: 0.5em !important;
+        padding: 1px 4px !important;
+    }
+    
+    .game-over-buttons {
+        gap: 3px !important;
     }
 }

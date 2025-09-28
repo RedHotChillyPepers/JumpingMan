@@ -1,5 +1,5 @@
 // Версия игры
-const GAME_VERSION = '1.2.3.4';
+const GAME_VERSION = '1.3.0.0';
 
 class BabyVillagerGame {
     constructor() {
@@ -10,14 +10,22 @@ class BabyVillagerGame {
             gameReady: false
         };
         
+        // Информация об устройстве
+        this.deviceInfo = {
+            type: 'desktop', // desktop, mobile, tablet, tv
+            isMobile: false,
+            isDesktop: true,
+            isTablet: false,
+            isTV: false
+        };
+        
         // Время начала загрузки для контроля минимального времени показа
         this.loadingStartTime = Date.now();
         this.minLoadingTime = 2000; // Минимум 2 секунды показа экрана загрузки
 
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
-        this.canvas.width = 400;
-        this.canvas.height = 600;
+        this.setCanvasSize();
         
         // Полноэкранный паралакс canvas
         this.fullscreenCanvas = document.getElementById('fullscreenParallaxCanvas');
@@ -152,6 +160,86 @@ class BabyVillagerGame {
         this.initYandexSDK();
     }
 
+    setCanvasSize() {
+        // Получаем размеры окна браузера
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+        
+        // Получаем размеры контейнера игры
+        const gameContainer = document.getElementById('gameContainer');
+        const containerWidth = gameContainer ? gameContainer.clientWidth : windowWidth;
+        const containerHeight = gameContainer ? gameContainer.clientHeight : windowHeight;
+        
+        // Базовые размеры canvas (внутреннее разрешение)
+        const baseWidth = 400;
+        const baseHeight = 600;
+        
+        // Рассчитываем доступное пространство с учетом UI элементов
+        // UI сверху занимает примерно 80px, мобильные кнопки снизу - 120px
+        const uiTopHeight = 80;
+        const uiBottomHeight = 120;
+        const sidePadding = 20;
+        
+        // Доступное пространство для канваса
+        const availableWidth = Math.max(containerWidth - sidePadding * 2, baseWidth);
+        const availableHeight = Math.max(containerHeight - uiTopHeight - uiBottomHeight, baseHeight);
+        
+        // Рассчитываем масштаб для сохранения пропорций
+        const scaleX = availableWidth / baseWidth;
+        const scaleY = availableHeight / baseHeight;
+        const scale = Math.min(scaleX, scaleY, 2.0); // Ограничиваем максимальный масштаб
+        
+        // Устанавливаем внутреннее разрешение canvas (всегда одинаковое)
+        this.canvas.width = baseWidth;
+        this.canvas.height = baseHeight;
+        
+        // Рассчитываем финальные размеры с учетом масштаба
+        const finalWidth = baseWidth * scale;
+        const finalHeight = baseHeight * scale;
+        
+        // Устанавливаем CSS размеры с масштабированием
+        this.canvas.style.width = finalWidth + 'px';
+        this.canvas.style.height = finalHeight + 'px';
+        
+        // Принудительно сбрасываем все возможные ограничения
+        this.canvas.style.maxWidth = 'none';
+        this.canvas.style.maxHeight = 'none';
+        this.canvas.style.minWidth = 'none';
+        this.canvas.style.minHeight = 'none';
+        
+        // Устанавливаем новые ограничения для предотвращения выхода за границы
+        this.canvas.style.maxWidth = finalWidth + 'px';
+        this.canvas.style.maxHeight = finalHeight + 'px';
+        
+        // Центрируем канвас
+        this.canvas.style.margin = '0 auto';
+        this.canvas.style.display = 'block';
+        
+        // Принудительно обновляем стили
+        this.canvas.style.boxSizing = 'border-box';
+        
+        // Дополнительная проверка - убеждаемся, что канвас не выходит за границы
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const containerRect = gameContainer ? gameContainer.getBoundingClientRect() : { width: windowWidth, height: windowHeight };
+        
+        // Если канвас все еще выходит за границы, принудительно уменьшаем его
+        if (canvasRect.width > containerRect.width || canvasRect.height > containerRect.height) {
+            const emergencyScale = Math.min(
+                containerRect.width / baseWidth,
+                containerRect.height / baseHeight,
+                1.0
+            );
+            
+            const emergencyWidth = baseWidth * emergencyScale;
+            const emergencyHeight = baseHeight * emergencyScale;
+            
+            this.canvas.style.width = emergencyWidth + 'px';
+            this.canvas.style.height = emergencyHeight + 'px';
+            this.canvas.style.maxWidth = emergencyWidth + 'px';
+            this.canvas.style.maxHeight = emergencyHeight + 'px';
+        }
+    }
+
     setFullscreenCanvasSize() {
         if (this.fullscreenCanvas) {
             // Полноэкранный canvas всегда занимает весь экран
@@ -169,6 +257,9 @@ class BabyVillagerGame {
                 this.ysdk = ysdk;
                 this.loadingState.sdkInitialized = true;
                 
+                // Определяем тип устройства
+                this.detectDeviceType();
+                
                 // Задержка перед следующим этапом
                 setTimeout(() => {
                     this.updateLoadingProgress(2);
@@ -179,6 +270,7 @@ class BabyVillagerGame {
                         this.updateLoadingProgress(3);
                         this.loadingState.gameReady = true;
                         console.log('Yandex Games SDK initialized');
+                        console.log('Device type:', this.deviceInfo.type);
                         this.checkLoadingComplete();
                     }, 600); // 600мс для подготовки игры
                 }, 600); // 600мс для определения языка
@@ -191,6 +283,123 @@ class BabyVillagerGame {
         } else {
             // Если SDK недоступен, симулируем процесс загрузки
             this.simulateLoadingProcess();
+        }
+    }
+
+    detectDeviceType() {
+        if (this.ysdk && this.ysdk.deviceInfo) {
+            // Используем Яндекс SDK для определения устройства
+            this.deviceInfo.isMobile = this.ysdk.deviceInfo.isMobile();
+            this.deviceInfo.isDesktop = this.ysdk.deviceInfo.isDesktop();
+            this.deviceInfo.isTablet = this.ysdk.deviceInfo.isTablet();
+            this.deviceInfo.isTV = this.ysdk.deviceInfo.isTV();
+            
+            // Определяем основной тип устройства
+            if (this.deviceInfo.isMobile) {
+                this.deviceInfo.type = 'mobile';
+            } else if (this.deviceInfo.isTablet) {
+                this.deviceInfo.type = 'tablet';
+            } else if (this.deviceInfo.isTV) {
+                this.deviceInfo.type = 'tv';
+            } else {
+                this.deviceInfo.type = 'desktop';
+            }
+            
+            console.log('Device detected via Yandex SDK:', this.deviceInfo);
+        } else {
+            // Fallback: определяем устройство по размеру экрана
+            this.detectDeviceByScreenSize();
+        }
+        
+        // Применяем настройки для устройства
+        this.applyDeviceSettings();
+    }
+
+    detectDeviceByScreenSize() {
+        // Fallback метод для определения устройства по размеру экрана
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+        const minDimension = Math.min(width, height);
+        const maxDimension = Math.max(width, height);
+        
+        // Простая эвристика для определения типа устройства
+        if (minDimension <= 480) {
+            this.deviceInfo.type = 'mobile';
+            this.deviceInfo.isMobile = true;
+            this.deviceInfo.isDesktop = false;
+            this.deviceInfo.isTablet = false;
+            this.deviceInfo.isTV = false;
+        } else if (minDimension <= 768 && maxDimension <= 1024) {
+            this.deviceInfo.type = 'tablet';
+            this.deviceInfo.isMobile = false;
+            this.deviceInfo.isDesktop = false;
+            this.deviceInfo.isTablet = true;
+            this.deviceInfo.isTV = false;
+        } else {
+            this.deviceInfo.type = 'desktop';
+            this.deviceInfo.isMobile = false;
+            this.deviceInfo.isDesktop = true;
+            this.deviceInfo.isTablet = false;
+            this.deviceInfo.isTV = false;
+        }
+        
+        console.log('Device detected by screen size:', this.deviceInfo);
+    }
+
+    applyDeviceSettings() {
+        const mobileControls = document.getElementById('mobileControls');
+        
+        if (!mobileControls) return;
+        
+        // Убираем все классы устройств
+        mobileControls.classList.remove('mobile-device', 'tablet-device', 'desktop-device', 'tv-device');
+        
+        // Показываем/скрываем кнопки управления в зависимости от устройства
+        if (this.deviceInfo.isMobile) {
+            mobileControls.style.display = 'flex';
+            mobileControls.classList.add('mobile-device');
+            console.log('Mobile controls enabled for mobile device');
+        } else if (this.deviceInfo.isTablet) {
+            mobileControls.style.display = 'flex';
+            mobileControls.classList.add('tablet-device');
+            console.log('Mobile controls enabled for tablet device');
+        } else {
+            mobileControls.style.display = 'none';
+            if (this.deviceInfo.isTV) {
+                mobileControls.classList.add('tv-device');
+                console.log('Mobile controls disabled for TV device');
+            } else {
+                mobileControls.classList.add('desktop-device');
+                console.log('Mobile controls disabled for desktop device');
+            }
+        }
+        
+        // Дополнительные настройки для разных устройств
+        this.applyDeviceSpecificSettings();
+    }
+
+    applyDeviceSpecificSettings() {
+        // Настройки для мобильных устройств
+        if (this.deviceInfo.isMobile) {
+            // Можно добавить специфичные настройки для мобильных
+            document.body.classList.add('mobile-device');
+            document.body.classList.remove('tablet-device', 'desktop-device', 'tv-device');
+        }
+        // Настройки для планшетов
+        else if (this.deviceInfo.isTablet) {
+            // Можно добавить специфичные настройки для планшетов
+            document.body.classList.add('tablet-device');
+            document.body.classList.remove('mobile-device', 'desktop-device', 'tv-device');
+        }
+        // Настройки для десктопа
+        else if (this.deviceInfo.isDesktop) {
+            document.body.classList.add('desktop-device');
+            document.body.classList.remove('mobile-device', 'tablet-device', 'tv-device');
+        }
+        // Настройки для ТВ
+        else if (this.deviceInfo.isTV) {
+            document.body.classList.add('tv-device');
+            document.body.classList.remove('mobile-device', 'tablet-device', 'desktop-device');
         }
     }
 
@@ -209,6 +418,9 @@ class BabyVillagerGame {
         // Симулируем процесс загрузки для автономного режима
         this.setDefaultLanguage();
         
+        // Определяем устройство по размеру экрана (fallback)
+        this.detectDeviceType();
+        
         setTimeout(() => {
             this.updateLoadingProgress(2);
             this.loadingState.sdkInitialized = true;
@@ -219,6 +431,8 @@ class BabyVillagerGame {
                 
                 setTimeout(() => {
                     this.loadingState.gameReady = true;
+                    console.log('Simulated loading process completed');
+                    console.log('Device type (fallback):', this.deviceInfo.type);
                     this.checkLoadingComplete();
                 }, 600);
             }, 600);
@@ -804,26 +1018,24 @@ class BabyVillagerGame {
         this.backgroundMusicPlaying = false;
         
         // Приостанавливаем аудио контекст для экономии ресурсов
-        if (this.audioContext && this.audioContext.state === 'running') {
-            this.audioContext.suspend().catch(error => {
-                console.log('Не удалось приостановить аудио контекст:', error);
-            });
-        }
+        this.audioContext.suspend().catch(error => {
+            console.log('Не удалось приостановить аудио контекст:', error);
+        });
+    
     }
 
     resumeBackgroundMusic() {
         // Возобновляем аудио контекст
-        if (this.audioContext && this.audioContext.state === 'suspended') {
-            this.audioContext.resume().catch(error => {
-                console.log('Не удалось возобновить аудио контекст:', error);
-            });
-        }
+        this.audioContext.resume().catch(error => {
+            console.log('Не удалось возобновить аудио контекст:', error);
+        });
     }
 
     toggleSound() {
         this.soundEnabled = !this.soundEnabled;
         localStorage.setItem('soundEnabled', this.soundEnabled.toString());
         this.updateSoundButton();
+        this.sounds.background();
     }
 
     updateSoundButton() {
@@ -962,6 +1174,7 @@ class BabyVillagerGame {
 
         // Обработка изменения размера окна
         window.addEventListener('resize', () => {
+            this.setCanvasSize();
             this.setFullscreenCanvasSize();
         });
 
@@ -972,16 +1185,19 @@ class BabyVillagerGame {
                 this.stopBackgroundMusic();
             } else {
                 // Вернулись в браузер - возобновляем музыку если игра активна
-                if (this.gameState === 'playing' && this.soundEnabled) {
-                    this.resumeBackgroundMusic();
-                    this.sounds.background();
-                }
+                this.resumeBackgroundMusic();
+                
             }
         });
 
         // Дополнительная остановка музыки при потере фокуса окна
         window.addEventListener('blur', () => {
             this.stopBackgroundMusic();
+        });
+
+        // Возобновление музыки при возврате фокуса окна
+        window.addEventListener("focus", () => {
+            this.resumeBackgroundMusic();
         });
     }
 
@@ -1546,7 +1762,7 @@ class BabyVillagerGame {
         const timeScale = this.deltaTime / 16.67;
         
         // Горизонтальное движение - одинаковая скорость для всех устройств
-        let acceleration = 0.8 * timeScale; // Уменьшенное ускорение для плавности
+        let acceleration = 0.75 * timeScale; // Уменьшенное ускорение для плавности
         
         if (this.keys['ArrowLeft'] || this.keys['KeyA']) {
             this.player.velocityX = Math.max(this.player.velocityX - acceleration, -this.player.maxSpeed);
@@ -2946,4 +3162,12 @@ class BabyVillagerGame {
 // Инициализация игры
 document.addEventListener('DOMContentLoaded', () => {
     window.game = new BabyVillagerGame();
+    
+    // Дополнительный вызов setCanvasSize после небольшой задержки
+    // чтобы убедиться, что все элементы загружены
+    setTimeout(() => {
+        if (window.game && window.game.setCanvasSize) {
+            window.game.setCanvasSize();
+        }
+    }, 100);
 });
